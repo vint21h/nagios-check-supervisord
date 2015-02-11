@@ -24,15 +24,15 @@ Configuration
         define command
         {
             command_name check_supervisord
-            command_line /usr/bin/check_supervisord.py -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -s $ARG4$
+            command_line $USER1$/check_supervisord -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -s $ARG4$
         }
 
-    # 'check_supervisord' service for 'myapp' program
+    # 'check_supervisord' service for 'myprog' program
     define service
     {
         use                 local-service
         host_name           localhost
-        service_description My app state
+        service_description My program state
         check_command       check_supervisord!127.0.0.1!9001!myapp!username!password
     }
 
@@ -45,12 +45,10 @@ Without ``--programs`` option script check all programs from supervisord respons
 
 Also, ``--programs`` option can take comma separated list of programs to check.
 
-
 Licensing
 ---------
 nagios-check-supervisord is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 For complete license text see COPYING file.
-
 
 Contacts
 --------
