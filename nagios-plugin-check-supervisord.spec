@@ -1,10 +1,13 @@
+# nagios-check-supervisord
+# nagios-plugin-check-supervisord.spec
+
 %global _unpackaged_files_terminate_build 0
 %global original_name nagios-check-supervisord
 %global debug_package %{nil}
 
 Summary: Check supervisord programs status Nagios plugin
 Name: nagios-plugins-check-supervisord
-Version: 0.1.5
+Version: 0.1.6
 Release: 1%{?dist}
 Source0: %{original_name}-%{version}.tar.gz
 License: GPLv3 or later
