@@ -33,7 +33,7 @@ Configuration
         use                 local-service
         host_name           localhost
         service_description My app state
-        check_command       check_supervisord!127.0.0.1!9100!myapp!username!password
+        check_command       check_supervisord!127.0.0.1!9001!myapp!username!password
     }
 
 Without ``--programs`` option script check all programs from supervisord response and return priority based global status:
