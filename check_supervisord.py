@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2011-2014 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord]
 #
 # This file is part of nagios-check-supervisord.
@@ -36,7 +36,7 @@ except ImportError, err:
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 1, 0)
+VERSION = (0, 1, 1)
 __version__ = '.'.join(map(str, VERSION))
 
 # global variables
