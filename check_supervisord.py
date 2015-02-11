@@ -36,25 +36,25 @@ except ImportError, err:
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 1, 6)
+VERSION = (0, 1, 7)
 __version__ = '.'.join(map(str, VERSION))
 
 # global variables
 OUTPUT_TEMPLATES = {
     "critical": {
-        "text": u"problem with program '%(name)s: (%(status)s)",
+        "text": u"problem with '%(name)s: (%(status)s)",
         "priority": 1,
     },
     "warning": {
-        "text": u"something curiously with program '%(name)s: (%(status)s)",
+        "text": u"something curiously with '%(name)s: (%(status)s)",
         "priority": 2,
     },
     "unknown": {
-        "text": u"program '%(name)s' not found in server response",
+        "text": u"'%(name)s' not found in server response",
         "priority": 3,
     },
     "ok": {
-        "text": u"program %(name)s status OK",
+        "text": u"%(name)s: OK",
         "priority": 4,
     },
 }

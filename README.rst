@@ -24,7 +24,7 @@ Configuration
         define command
         {
             command_name check_supervisord
-            command_line $USER1$/check_supervisord -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -s $ARG4$
+            command_line $USER1$/check_supervisord -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -s $ARG5$
         }
 
     # 'check_supervisord' service for 'myprog' program
