@@ -30,23 +30,23 @@ try:
     import xmlrpclib
     from string import strip
 except ImportError, err:
-    sys.stderr.write("ERROR: Couldn't load module. %s\n" % err)
+    sys.stderr.write(u"ERROR: Couldn't load module. %s\n" % err)
     sys.exit(-1)
 
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 1, 8)
-__version__ = '.'.join(map(str, VERSION))
+VERSION = (0, 1, 9)
+__version__ = ".".join(map(str, VERSION))
 
 # global variables
 OUTPUT_TEMPLATES = {
     "critical": {
-        "text": u"problem with '%(name)s: (%(status)s)",
+        "text": u"problem with '%(name)s': (%(status)s)",
         "priority": 1,
     },
     "warning": {
-        "text": u"something curiously with '%(name)s: (%(status)s)",
+        "text": u"something curiously with '%(name)s': (%(status)s)",
         "priority": 2,
     },
     "unknown": {
@@ -155,7 +155,7 @@ def create_output(data, options):
             program_data = filter(lambda x: x["name"] == program, data)[0]
             output.update({
                 program: {
-                    'name': program,
+                    "name": program,
                     "template": STATE2TEMPLATE[program_data["statename"]],
                     "status": program_data["spawnerr"],
                 }
@@ -163,19 +163,19 @@ def create_output(data, options):
         except IndexError:
             output.update({
                 program: {
-                    'name': program,
+                    "name": program,
                     "template": u"unknown",
                     "status": u"",
                 }
             })
 
     # getting main status for check (for multiple check need to get main status by priority)
-    status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]['priority']) for status in list(set([output[d]['template'] for d in output.keys()]))], key=lambda x: x[1])][0]
+    status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
 
     # return full status string with main status for multiple programs and all programs states
     return u"%(status)s: %(output)s\n" % {
         "status": status.upper(),
-        "output": u", ".join([OUTPUT_TEMPLATES[output[program]['template']]['text'] % output[program] for program in output.keys()]),
+        "output": u", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"] % output[program] for program in output.keys()]),
     }
 
 
