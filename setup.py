@@ -4,33 +4,34 @@
 # nagios-check-supervisord
 # setup.py
 
+from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 # metadata
-VERSION = (0, 1, 9)
-__version__ = '.'.join(map(str, VERSION))
+VERSION = (0, 2, 0)
+__version__ = ".".join(map(str, VERSION))
 
-DATA = ['README.rst', 'COPYING', ]
+DATA = ["README.rst", "COPYING", "AUTHORS", ]
 
 setup(
     name="nagios-check-supervisord",
     version=__version__,
     packages=find_packages(),
-    scripts=['check_supervisord.py', ],
+    scripts=["check_supervisord.py", ],
     install_requires=[],
     package_data={
-        'nagios-check-supervisord': DATA,
+        "nagios-check-supervisord": DATA,
     },
     data_files=[
-        ('share/doc/nagios-check-supervisord/', DATA),
+        ("share/doc/nagios-check-supervisord/", DATA),
     ],
     author="Alexei Andrushievich",
     author_email="vint21h@vint21h.pp.ua",
     description="Check supervisord programs status Nagios plugin",
-    long_description=open('README.rst').read(),
+    long_description=open("README.rst").read(),
     license="GPLv3 or later",
     url="https://github.com/vint21h/nagios-check-supervisord",
-    download_url="https://github.com/vint21h/nagios-check-supervisord/archive/%s.tar.gz" % __version__,
+    download_url="https://github.com/vint21h/nagios-check-supervisord/archive/{version}.tar.gz".format(version=__version__),
     zip_safe=False,
     include_package_data=True,
     classifiers=[

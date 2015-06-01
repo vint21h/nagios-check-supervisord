@@ -23,50 +23,51 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 import sys
 
 try:
     from optparse import OptionParser
     import xmlrpclib
     from string import strip
-except ImportError, err:
-    sys.stderr.write(u"ERROR: Couldn't load module. %s\n" % err)
+except (ImportError, ), err:
+    sys.stderr.write("ERROR: Couldn't load module. {err}\n".format(err=err))
     sys.exit(-1)
 
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 1, 9)
+VERSION = (0, 2, 0)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
 OUTPUT_TEMPLATES = {
     "critical": {
-        "text": u"problem with '%(name)s': (%(status)s)",
+        "text": "problem with '{name}': ({status})",
         "priority": 1,
     },
     "warning": {
-        "text": u"something curiously with '%(name)s': (%(status)s)",
+        "text": "something curiously with '{name}': ({status})",
         "priority": 2,
     },
     "unknown": {
-        "text": u"'%(name)s' not found in server response",
+        "text": "'{name}' not found in server response",
         "priority": 3,
     },
     "ok": {
-        "text": u"%(name)s: OK",
+        "text": "{name}: OK",
         "priority": 4,
     },
 }
 STATE2TEMPLATE = {
-    "STOPPED": u"ok",
-    "RUNNING": u"ok",
-    "STARTING": u"warning",
-    "BACKOFF": u"warning",
-    "STOPPING": u"warning",
-    "EXITED": u"warning",
-    "FATAL": u"critical",
-    "UNKNOWN": u"unknown",
+    "STOPPED": "ok",
+    "RUNNING": "ok",
+    "STARTING": "warning",
+    "BACKOFF": "warning",
+    "STOPPING": "warning",
+    "EXITED": "warning",
+    "FATAL": "critical",
+    "UNKNOWN": "unknown",
 }
 
 
@@ -75,40 +76,40 @@ def parse_options():
     Commandline options arguments parsing.
     """
 
-    version = "%%prog %s" % __version__
+    version = "%%prog {version}".format(version=__version__)
     parser = OptionParser(version=version)
     parser.add_option(
         "-s", "--server", action="store", dest="server",
         type="string", default="", metavar="SERVER",
-        help=u"server name or IP address"
+        help="server name or IP address"
     )
     parser.add_option(
         "-p", "--port", action="store", type="int", dest="port",
-        default=9001, metavar="PORT", help=u"port number"
+        default=9001, metavar="PORT", help="port number"
     )
     parser.add_option(
         "-P", "--programs", action="store", dest="programs", type="string", default="",
-        metavar="PROGRAMS", help=u"comma separated programs list, or empty for all programs in supervisord response"
+        metavar="PROGRAMS", help="comma separated programs list, or empty for all programs in supervisord response"
     )
     parser.add_option(
         "-u", "--username", action="store", dest="username", type="string", default="",
-        metavar="USERNAME", help=u"supervisord user"
+        metavar="USERNAME", help="supervisord user"
     )
     parser.add_option(
         "-S", "--password", action="store", dest="password", type="string", default="",
-        metavar="PASSWORD", help=u"supervisord user password"
+        metavar="PASSWORD", help="supervisord user password"
     )
     parser.add_option(
-        "-q", "--quiet", metavar="QUIET", action="store_true", default=False, dest="quiet", help=u"be quiet"
+        "-q", "--quiet", metavar="QUIET", action="store_true", default=False, dest="quiet", help="be quiet"
     )
 
     options = parser.parse_args(sys.argv)[0]
 
     # check mandatory command line options supplied
     if not options.server:
-        parser.error(u"Required server address option missing")
+        parser.error("Required server address option missing")
     if options.username and not options.password:
-        parser.error(u"Required supervisord user password")
+        parser.error("Required supervisord user password")
 
     return options
 
@@ -122,21 +123,21 @@ def get_status(options):
 
     try:
         if all([options.username, options.password, ]):
-            connection = xmlrpclib.Server(u"http://%(username)s:%(password)s@%(server)s:%(port)s/RPC2" % {
+            connection = xmlrpclib.Server("http://{username}:{password}@{server}:{port}/RPC2".format(**{
                 "username": options.username,
                 "password": options.password,
                 "server": options.server,
                 "port": options.port,
-            })
+            }))
         else:
-            connection = xmlrpclib.Server(u"http://%(server)s:%(port)s/RPC2" % {
+            connection = xmlrpclib.Server("http://{server}:{port}/RPC2".format({
                 "server": options.server,
                 "port": options.port,
-            })
+            }))
         data = connection.supervisor.getAllProcessInfo()
-    except Exception, error:
+    except Exception, err:
         if not options.quiet:
-            sys.stderr.write(u"ERROR: Server communication problem. %s\n" % error)
+            sys.stderr.write("ERROR: Server communication problem. {err}\n".format(err=err))
         sys.exit(-1)
 
     return data
@@ -148,7 +149,7 @@ def create_output(data, options):
     """
 
     output = {}
-    programs = map(strip, options.programs.strip().split(u",")) if options.programs else map(lambda x: x["name"], data)
+    programs = map(strip, options.programs.strip().split(",")) if options.programs else map(lambda x: x["name"], data)
 
     for program in programs:
         try:
@@ -164,8 +165,8 @@ def create_output(data, options):
             output.update({
                 program: {
                     "name": program,
-                    "template": u"unknown",
-                    "status": u"",
+                    "template": "unknown",
+                    "status": "",
                 }
             })
 
@@ -173,10 +174,10 @@ def create_output(data, options):
     status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
 
     # return full status string with main status for multiple programs and all programs states
-    return u"%(status)s: %(output)s\n" % {
+    return "%(status)s: %(output)s\n".format(**{
         "status": status.upper(),
-        "output": u", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"] % output[program] for program in output.keys()]),
-    }
+        "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in output.keys()]),
+    })
 
 
 def main():
