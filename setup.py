@@ -5,10 +5,9 @@
 # setup.py
 
 from __future__ import unicode_literals
-from setuptools import setup, find_packages
 
 # metadata
-VERSION = (0, 2, 0)
+VERSION = (0, 2, 1)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = ["README.rst", "COPYING", "AUTHORS", ]
