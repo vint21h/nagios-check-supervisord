@@ -130,7 +130,7 @@ def get_status(options):
                 "port": options.port,
             }))
         else:
-            connection = xmlrpclib.Server("http://{server}:{port}/RPC2".format({
+            connection = xmlrpclib.Server("http://{server}:{port}/RPC2".format(**{
                 "server": options.server,
                 "port": options.port,
             }))
