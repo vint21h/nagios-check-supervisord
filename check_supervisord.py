@@ -173,11 +173,20 @@ def create_output(data, options):
     # getting main status for check (for multiple check need to get main status by priority)
     status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
 
+    if status == 'ok':
+        return_code = 0
+    elif status == 'warning':
+        return_code = 1
+    elif status == 'critical':
+        return_code = 2
+    else:
+        return_code = 3
+
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
         "status": status.upper(),
         "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in output.keys()]),
-    })
+    }), return_code
 
 
 def main():
@@ -186,8 +195,9 @@ def main():
     """
 
     options = parse_options()
-    sys.stdout.write(create_output(get_status(options), options))
-    sys.exit(0)
+    output, return_code = create_output(get_status(options), options)
+    sys.stdout.write(output)
+    sys.exit(return_code)
 
 if __name__ == "__main__":
 
