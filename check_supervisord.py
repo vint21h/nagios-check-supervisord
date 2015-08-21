@@ -174,7 +174,7 @@ def create_output(data, options):
     status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
 
     # return full status string with main status for multiple programs and all programs states
-    return "%(status)s: %(output)s\n".format(**{
+    return "{status}: {output}\n".format(**{
         "status": status.upper(),
         "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in output.keys()]),
     })
