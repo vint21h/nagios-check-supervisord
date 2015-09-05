@@ -30,14 +30,14 @@ try:
     from optparse import OptionParser
     import xmlrpclib
     from string import strip
-except (ImportError, ), err:
-    sys.stderr.write("ERROR: Couldn't load module. {err}\n".format(err=err))
+except (ImportError, ), error:
+    sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
     sys.exit(-1)
 
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 2, 0)
+VERSION = (0, 2, 5)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -68,6 +68,11 @@ STATE2TEMPLATE = {
     "EXITED": "warning",
     "FATAL": "critical",
     "UNKNOWN": "unknown",
+}
+EXIT_CODES = {
+    "ok": 0,
+    "warning": 1,
+    "critical": 2,
 }
 
 
@@ -135,9 +140,9 @@ def get_status(options):
                 "port": options.port,
             }))
         data = connection.supervisor.getAllProcessInfo()
-    except Exception, err:
+    except Exception, error:
         if not options.quiet:
-            sys.stderr.write("ERROR: Server communication problem. {err}\n".format(err=err))
+            sys.stderr.write("ERROR: Server communication problem. {error}\n".format(error=error))
         sys.exit(-1)
 
     return data
@@ -173,20 +178,13 @@ def create_output(data, options):
     # getting main status for check (for multiple check need to get main status by priority)
     status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
 
-    if status == 'ok':
-        return_code = 0
-    elif status == 'warning':
-        return_code = 1
-    elif status == 'critical':
-        return_code = 2
-    else:
-        return_code = 3
+    code = EXIT_CODES.get(status, 3)  # create exit code
 
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
         "status": status.upper(),
         "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in output.keys()]),
-    }), return_code
+    }), code
 
 
 def main():
@@ -195,9 +193,9 @@ def main():
     """
 
     options = parse_options()
-    output, return_code = create_output(get_status(options), options)
+    output, code = create_output(get_status(options), options)
     sys.stdout.write(output)
-    sys.exit(return_code)
+    sys.exit(code)
 
 if __name__ == "__main__":
 
