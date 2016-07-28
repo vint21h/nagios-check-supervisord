@@ -145,7 +145,7 @@ def get_status(options):
         data = connection.supervisor.getAllProcessInfo()
     except Exception, error:
         if not options.quiet:
-            sys.stderr.write("ERROR: Server communication problem. {error}\n".format(error=error))
+            sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
         sys.exit(3)
 
     return data
