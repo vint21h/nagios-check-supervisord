@@ -143,7 +143,7 @@ def get_status(options):
     except Exception, error:
         if not options.quiet:
             sys.stderr.write("ERROR: Server communication problem. {error}\n".format(error=error))
-        sys.exit(-1)
+        sys.exit(3)
 
     return data
 
