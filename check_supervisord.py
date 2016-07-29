@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2015 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015-2016 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord]
 #
 # This file is part of nagios-check-supervisord.
@@ -30,14 +30,14 @@ try:
     from optparse import OptionParser
     import xmlrpclib
     from string import strip
-except (ImportError, ), error:
+except ImportError, error:
     sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
     sys.exit(-1)
 
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 2, 7)
+VERSION = (0, 3, 0)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
