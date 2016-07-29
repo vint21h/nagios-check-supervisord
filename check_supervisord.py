@@ -60,6 +60,7 @@ OUTPUT_TEMPLATES = {
     },
 }
 STATE2TEMPLATE = {
+    "STOPPED": "ok",
     "RUNNING": "ok",
     "STARTING": "warning",
     "BACKOFF": "warning",
@@ -112,6 +113,7 @@ def parse_options():
     )
 
     options = parser.parse_args(sys.argv)[0]
+    STATE2TEMPLATE["STOPPED"] = options.stopped_state  # update stopped state value from command line argument
 
     # check mandatory command line options supplied
     if not options.server:
@@ -196,7 +198,6 @@ def main():
     """
 
     options = parse_options()
-    STATE2TEMPLATE["STOPPED"] = options.stopped_state
     output, code = create_output(get_status(options), options)
     sys.stdout.write(output)
     sys.exit(code)
