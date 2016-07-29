@@ -60,7 +60,6 @@ OUTPUT_TEMPLATES = {
     },
 }
 STATE2TEMPLATE = {
-    "STOPPED": "ok",
     "RUNNING": "ok",
     "STARTING": "warning",
     "BACKOFF": "warning",
@@ -107,6 +106,10 @@ def parse_options():
     parser.add_option(
         "-q", "--quiet", metavar="QUIET", action="store_true", default=False, dest="quiet", help="be quiet"
     )
+    parser.add_option(
+        "--stopped-state", action="store", dest="stopped_state", type="choice", choices=EXIT_CODES.keys(), default="ok",
+        metavar="STOPPED_STATE", help="stopped state"
+    )
 
     options = parser.parse_args(sys.argv)[0]
 
@@ -142,8 +145,8 @@ def get_status(options):
         data = connection.supervisor.getAllProcessInfo()
     except Exception, error:
         if not options.quiet:
-            sys.stderr.write("ERROR: Server communication problem. {error}\n".format(error=error))
-        sys.exit(-1)
+            sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
+        sys.exit(3)
 
     return data
 
@@ -193,6 +196,7 @@ def main():
     """
 
     options = parse_options()
+    STATE2TEMPLATE["STOPPED"] = options.stopped_state
     output, code = create_output(get_status(options), options)
     sys.stdout.write(output)
     sys.exit(code)
