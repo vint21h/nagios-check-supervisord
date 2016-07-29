@@ -45,6 +45,8 @@ Without ``--programs`` option script check all programs from supervisord respons
 
 Also, ``--programs`` option can take comma separated list of programs to check.
 
+``--stopped-state`` option allow set Nagios status for stopped programs.
+
 Licensing
 ---------
 nagios-check-supervisord is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
