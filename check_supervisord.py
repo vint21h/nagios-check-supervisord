@@ -55,7 +55,7 @@ OUTPUT_TEMPLATES = {
         "priority": 3,
     },
     "ok": {
-        "text": "{name}: OK",
+        "text": "'{name}': OK",
         "priority": 4,
     },
 }
