@@ -168,7 +168,7 @@ def create_output(data, options):
                 program: {
                     "name": program,
                     "template": STATE2TEMPLATE[program_data["statename"]],
-                    "status": program_data["spawnerr"],
+                    "status": (program_data["spawnerr"] if program_data["spawnerr"] else program_data["statename"]),
                 }
             })
         except IndexError:
