@@ -37,7 +37,7 @@ except ImportError, error:
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 3, 0)
+VERSION = (0, 3, 1)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -168,7 +168,7 @@ def create_output(data, options):
                 program: {
                     "name": program,
                     "template": STATE2TEMPLATE[program_data["statename"]],
-                    "status": (program_data["spawnerr"] if program_data["spawnerr"] else program_data["statename"]),
+                    "status": program_data["spawnerr"] if program_data["spawnerr"] else program_data["statename"],
                 }
             })
         except IndexError:
