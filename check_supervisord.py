@@ -55,7 +55,7 @@ OUTPUT_TEMPLATES = {
         "priority": 3,
     },
     "ok": {
-        "text": "{name}: OK",
+        "text": "'{name}': OK",
         "priority": 4,
     },
 }
@@ -168,7 +168,7 @@ def create_output(data, options):
                 program: {
                     "name": program,
                     "template": STATE2TEMPLATE[program_data["statename"]],
-                    "status": program_data["spawnerr"],
+                    "status": (program_data["spawnerr"] if program_data["spawnerr"] else program_data["statename"]),
                 }
             })
         except IndexError:
@@ -188,7 +188,7 @@ def create_output(data, options):
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
         "status": status.upper(),
-        "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in output.keys()]),
+        "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in sorted(output.keys(), key=lambda x: OUTPUT_TEMPLATES[output[x]["template"]]["priority"])]),
     }), code
 
 
