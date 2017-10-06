@@ -37,7 +37,7 @@ except ImportError, error:
 __all__ = ["main", ]
 
 # metadata
-VERSION = (0, 3, 1)
+VERSION = (0, 3, 2)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -181,7 +181,13 @@ def create_output(data, options):
             })
 
     # getting main status for check (for multiple check need to get main status by priority)
-    status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
+    status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])]
+
+    # We need to handle some supervisord without any program configured:
+    if status:
+      status = status[0]
+    else:
+      return "OK: No program configured/found", 0
 
     code = EXIT_CODES.get(status, 3)  # create exit code
 
