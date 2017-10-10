@@ -23,6 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 from __future__ import unicode_literals
 import sys
 
@@ -30,14 +31,16 @@ try:
     from optparse import OptionParser
     import xmlrpclib
     from string import strip
-except ImportError, error:
+except ImportError as error:
     sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
     sys.exit(-1)
 
+
 __all__ = ["main", ]
 
+
 # metadata
-VERSION = (0, 3, 1)
+VERSION = (0, 4, 0)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -145,7 +148,7 @@ def get_status(options):
                 "port": options.port,
             }))
         data = connection.supervisor.getAllProcessInfo()
-    except Exception, error:
+    except Exception as error:
         if not options.quiet:
             sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
         sys.exit(3)
@@ -181,14 +184,17 @@ def create_output(data, options):
             })
 
     # getting main status for check (for multiple check need to get main status by priority)
-    status = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])][0]
+    statuses = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])]
+    # if no programs found or configured by supervisord set status ok and custom message
+    status = statuses[0] if statuses else "ok"
+    text = ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in sorted(output.keys(), key=lambda x: OUTPUT_TEMPLATES[output[x]["template"]]["priority"])]) if statuses else "No program configured/found"
 
     code = EXIT_CODES.get(status, 3)  # create exit code
 
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
         "status": status.upper(),
-        "output": ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in sorted(output.keys(), key=lambda x: OUTPUT_TEMPLATES[output[x]["template"]]["priority"])]),
+        "output": text,
     }), code
 
 
@@ -201,6 +207,7 @@ def main():
     output, code = create_output(get_status(options), options)
     sys.stdout.write(output)
     sys.exit(code)
+
 
 if __name__ == "__main__":
 
