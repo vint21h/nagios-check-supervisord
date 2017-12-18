@@ -46,6 +46,7 @@ Without ``--programs`` option script check all programs from supervisord respons
 Also, ``--programs`` option can take comma separated list of programs to check.
 
 ``--stopped-state`` option allow set Nagios status for stopped programs.
+
 ``--network-errors-exit-code`` option allow set Nagios status for checks network errors.
 
 Licensing
