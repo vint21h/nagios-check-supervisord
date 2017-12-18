@@ -34,6 +34,9 @@ install -p -m 755 check_supervisord.py %{buildroot}%{_libdir}/nagios/plugins/che
 %{_libdir}/nagios/plugins/check_supervisord
 
 %changelog
+* Mon Dec 18 2017 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.5.1-1
+- Update to new version
+
 * Mon Dec 18 2017 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.5.0-1
 - Update to new version
 
