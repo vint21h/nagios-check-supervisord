@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2015-2016 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015-2017 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord]
 #
 # This file is part of nagios-check-supervisord.
@@ -40,7 +40,7 @@ __all__ = ["main", ]
 
 
 # metadata
-VERSION = (0, 4, 0)
+VERSION = (0, 5, 0)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -76,12 +76,16 @@ EXIT_CODES = {
     "ok": 0,
     "warning": 1,
     "critical": 2,
+    "unknown": 3,
 }
 
 
 def parse_options():
     """
     Commandline options arguments parsing.
+
+    :return: parsed commandline arguments.
+    :rtype: optparse.Values.
     """
 
     version = "%%prog {version}".format(version=__version__)
@@ -114,6 +118,10 @@ def parse_options():
         "--stopped-state", action="store", dest="stopped_state", type="choice", choices=EXIT_CODES.keys(), default="ok",
         metavar="STOPPED_STATE", help="stopped state"
     )
+    parser.add_option(
+        "--network-errors-exit-code", action="store", dest="network_errors_exit_code", type="choice", choices=EXIT_CODES.keys(), default="unknown",
+        metavar="NETWORK_ERRORS_EXIT_CODE", help="network errors exit code"
+    )
 
     options = parser.parse_args(sys.argv)[0]
     STATE2TEMPLATE["STOPPED"] = options.stopped_state  # update stopped state value from command line argument
@@ -130,9 +138,12 @@ def parse_options():
 def get_status(options):
     """
     Get programs statuses.
-    """
 
-    data = {}
+    :param options: parsed commandline arguments.
+    :type options: optparse.Values.
+    :return: supervisord XML-RPC call result.
+    :rtype: dict.
+    """
 
     try:
         if all([options.username, options.password, ]):
@@ -147,18 +158,24 @@ def get_status(options):
                 "server": options.server,
                 "port": options.port,
             }))
-        data = connection.supervisor.getAllProcessInfo()
+
+        return connection.supervisor.getAllProcessInfo()
     except Exception as error:
         if not options.quiet:
             sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
-        sys.exit(3)
-
-    return data
+        sys.exit(EXIT_CODES.get(options.network_errors_exit_code, "unknown"))
 
 
 def create_output(data, options):
     """
     Create Nagios and human readable supervisord statuses.
+
+    :param data: supervisord XML-RPC call result.
+    :type data: dict.
+    :param options: parsed commandline arguments.
+    :type options: optparse.Values.
+    :return: Nagios and human readable supervisord statuses and exit code.
+    :rtype: (str, int).
     """
 
     output = {}
@@ -189,7 +206,8 @@ def create_output(data, options):
     status = statuses[0] if statuses else "ok"
     text = ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in sorted(output.keys(), key=lambda x: OUTPUT_TEMPLATES[output[x]["template"]]["priority"])]) if statuses else "No program configured/found"
 
-    code = EXIT_CODES.get(status, 3)  # create exit code
+    # create exit code (unknown if something happened wrong)
+    code = EXIT_CODES.get(status, "unknown")
 
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
@@ -210,5 +228,8 @@ def main():
 
 
 if __name__ == "__main__":
+    """
+    Run program main.
+    """
 
     main()
