@@ -4,10 +4,12 @@
 # nagios-check-supervisord
 # setup.py
 
+
 from setuptools import setup, find_packages
 
+
 # metadata
-VERSION = (0, 4, 0)
+VERSION = (0, 5, 0)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = ["README.rst", "COPYING", "AUTHORS", ]

@@ -21,11 +21,11 @@ Configuration
 ::
 
     # "check_supervisord" command
-        define command
-        {
-            command_name check_supervisord
-            command_line $USER1$/check_supervisord -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -s $ARG5$
-        }
+    define command
+    {
+        command_name check_supervisord
+        command_line $USER1$/check_supervisord -s $ARG1$ -p $ARG2$ -P $ARG3$ -u $ARG4$ -S $ARG5$
+    }
 
     # "check_supervisord" service for "myprog" program
     define service
@@ -46,6 +46,7 @@ Without ``--programs`` option script check all programs from supervisord respons
 Also, ``--programs`` option can take comma separated list of programs to check.
 
 ``--stopped-state`` option allow set Nagios status for stopped programs.
+``--network-errors-exit-code`` option allow set Nagios status for checks network errors.
 
 Licensing
 ---------
