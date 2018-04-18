@@ -5,11 +5,14 @@
 # setup.py
 
 
-from setuptools import setup, find_packages
+from setuptools import (
+    setup,
+    find_packages,
+)
 
 
 # metadata
-VERSION = (0, 5, 1)
+VERSION = (0, 5, 2)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = ["README.rst", "COPYING", "AUTHORS", ]
@@ -31,7 +34,7 @@ setup(
     description="Check supervisord programs status Nagios plugin",
     long_description=open("README.rst").read(),
     license="GPLv3 or later",
-    url="https://github.com/vint21h/nagios-check-supervisord",
+    url="https://github.com/vint21h/nagios-check-supervisord/",
     download_url="https://github.com/vint21h/nagios-check-supervisord/archive/{version}.tar.gz".format(version=__version__),
     zip_safe=False,
     include_package_data=True,
