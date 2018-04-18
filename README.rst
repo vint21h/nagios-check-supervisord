@@ -56,7 +56,7 @@ For complete license text see COPYING file.
 
 Contacts
 --------
-**Project Website**: https://github.com/vint21h/nagios-check-supervisord
+**Project Website**: https://github.com/vint21h/nagios-check-supervisord/
 
 **Author**: Alexei Andrushievich <vint21h@vint21h.pp.ua>
 
