@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2015-2017 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015-2018 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord]
 #
 # This file is part of nagios-check-supervisord.
@@ -40,7 +40,7 @@ __all__ = ["main", ]
 
 
 # metadata
-VERSION = (0, 5, 1)
+VERSION = (0, 5, 2)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -62,21 +62,23 @@ OUTPUT_TEMPLATES = {
         "priority": 4,
     },
 }
-STATE2TEMPLATE = {
-    "STOPPED": "ok",
-    "RUNNING": "ok",
-    "STARTING": "warning",
-    "BACKOFF": "warning",
-    "STOPPING": "warning",
-    "EXITED": "warning",
-    "FATAL": "critical",
-    "UNKNOWN": "unknown",
-}
+EXIT_CODE_OK, EXIT_CODE_WARNING, EXIT_CODE_CRITICAL, EXIT_CODE_UNKNOWN = "ok", "warning", "critical", "unknown"
 EXIT_CODES = {
-    "ok": 0,
-    "warning": 1,
-    "critical": 2,
-    "unknown": 3,
+    EXIT_CODE_OK: 0,
+    EXIT_CODE_WARNING: 1,
+    EXIT_CODE_CRITICAL: 2,
+    EXIT_CODE_UNKNOWN: 3,
+}
+STATE_STOPPED, STATE_RUNNING, STATE_STARTING, STATE_BACKOFF, STATE_STOPPING, STATE_EXITED, STATE_FATAL, STATE_UNKNOWN = "STOPPED", "RUNNING", "STARTING", "BACKOFF", "STOPPING", "EXITED", "FATAL", "UNKNOWN"
+STATE2TEMPLATE = {
+    STATE_STOPPED: EXIT_CODE_OK,
+    STATE_RUNNING: EXIT_CODE_OK,
+    STATE_STARTING: EXIT_CODE_WARNING,
+    STATE_BACKOFF: EXIT_CODE_WARNING,
+    STATE_STOPPING: EXIT_CODE_WARNING,
+    STATE_EXITED: EXIT_CODE_WARNING,
+    STATE_FATAL: EXIT_CODE_CRITICAL,
+    STATE_UNKNOWN: EXIT_CODE_UNKNOWN,
 }
 
 
@@ -115,16 +117,16 @@ def parse_options():
         "-q", "--quiet", metavar="QUIET", action="store_true", default=False, dest="quiet", help="be quiet"
     )
     parser.add_option(
-        "--stopped-state", action="store", dest="stopped_state", type="choice", choices=EXIT_CODES.keys(), default="ok",
+        "--stopped-state", action="store", dest="stopped_state", type="choice", choices=EXIT_CODES.keys(), default=EXIT_CODE_OK,
         metavar="STOPPED_STATE", help="stopped state"
     )
     parser.add_option(
-        "--network-errors-exit-code", action="store", dest="network_errors_exit_code", type="choice", choices=EXIT_CODES.keys(), default="unknown",
+        "--network-errors-exit-code", action="store", dest="network_errors_exit_code", type="choice", choices=EXIT_CODES.keys(), default=EXIT_CODE_UNKNOWN,
         metavar="NETWORK_ERRORS_EXIT_CODE", help="network errors exit code"
     )
 
     options = parser.parse_args(sys.argv)[0]
-    STATE2TEMPLATE["STOPPED"] = options.stopped_state  # update stopped state value from command line argument
+    STATE2TEMPLATE[STATE_STOPPED] = options.stopped_state  # update stopped state value from command line argument
 
     # check mandatory command line options supplied
     if not options.server:
@@ -163,7 +165,7 @@ def get_status(options):
     except Exception as error:
         if not options.quiet:
             sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
-        sys.exit(EXIT_CODES.get(options.network_errors_exit_code, "unknown"))
+        sys.exit(EXIT_CODES.get(options.network_errors_exit_code, EXIT_CODE_UNKNOWN))
 
 
 def create_output(data, options):
@@ -203,11 +205,11 @@ def create_output(data, options):
     # getting main status for check (for multiple check need to get main status by priority)
     statuses = [status[0] for status in sorted([(status, OUTPUT_TEMPLATES[status]["priority"]) for status in list(set([output[d]["template"] for d in output.keys()]))], key=lambda x: x[1])]
     # if no programs found or configured by supervisord set status ok and custom message
-    status = statuses[0] if statuses else "ok"
+    status = statuses[0] if statuses else EXIT_CODE_OK
     text = ", ".join([OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(**output[program]) for program in sorted(output.keys(), key=lambda x: OUTPUT_TEMPLATES[output[x]["template"]]["priority"])]) if statuses else "No program configured/found"
 
     # create exit code (unknown if something happened wrong)
-    code = EXIT_CODES.get(status, "unknown")
+    code = EXIT_CODES.get(status, EXIT_CODE_UNKNOWN)
 
     # return full status string with main status for multiple programs and all programs states
     return "{status}: {output}\n".format(**{
