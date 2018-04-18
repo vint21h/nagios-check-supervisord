@@ -12,7 +12,7 @@ from setuptools import (
 
 
 # metadata
-VERSION = (0, 5, 2)
+VERSION = (0, 6, 0)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = ["README.rst", "COPYING", "AUTHORS", ]
@@ -38,6 +38,7 @@ setup(
     author_email="vint21h@vint21h.pp.ua",
     description="Check supervisord programs status Nagios plugin",
     long_description=open("README.rst").read(),
+    long_description_content_type="text/rst",
     license="GPLv3 or later",
     url="https://github.com/vint21h/nagios-check-supervisord/",
     download_url="https://github.com/vint21h/nagios-check-supervisord/archive/{version}.tar.gz".format(version=__version__),
