@@ -37,7 +37,7 @@ __all__ = ["main", ]
 
 
 # metadata
-VERSION = (0, 6, 0)
+VERSION = (0, 6, 1)
 __version__ = ".".join(map(str, VERSION))
 
 # global variables
@@ -170,9 +170,9 @@ def get_status(options):
                 sys.exit(-1)
 
             if all([options.username, options.password, ]):  # with auth
-                connection = xmlrpclib.ServerProxy("https://example.com/", transport=supervisor.xmlrpc.SupervisorTransport(options.username, options.password, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
+                connection = xmlrpclib.ServerProxy("https://", transport=supervisor.xmlrpc.SupervisorTransport(options.username, options.password, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
             else:
-                connection = xmlrpclib.ServerProxy("https://example.com/", transport=supervisor.xmlrpc.SupervisorTransport(None, None, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
+                connection = xmlrpclib.ServerProxy("https://", transport=supervisor.xmlrpc.SupervisorTransport(None, None, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
 
         else:  # communicate with server via http
             if all([options.username, options.password, ]):  # with auth
