@@ -25,16 +25,13 @@
 
 
 from __future__ import unicode_literals
+
+import os
+import stat
 import sys
-
-try:
-    from optparse import OptionParser
-    import xmlrpclib
-    from string import strip
-except ImportError as error:
-    sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
-    sys.exit(-1)
-
+import xmlrpclib
+from optparse import OptionParser
+from string import strip
 
 __all__ = ["main", ]
 
@@ -62,6 +59,7 @@ OUTPUT_TEMPLATES = {
         "priority": 4,
     },
 }
+# exit codes
 EXIT_CODE_OK, EXIT_CODE_WARNING, EXIT_CODE_CRITICAL, EXIT_CODE_UNKNOWN = "ok", "warning", "critical", "unknown"
 EXIT_CODES = {
     EXIT_CODE_OK: 0,
@@ -69,6 +67,7 @@ EXIT_CODES = {
     EXIT_CODE_CRITICAL: 2,
     EXIT_CODE_UNKNOWN: 3,
 }
+# programs states
 STATE_STOPPED, STATE_RUNNING, STATE_STARTING, STATE_BACKOFF, STATE_STOPPING, STATE_EXITED, STATE_FATAL, STATE_UNKNOWN = "STOPPED", "RUNNING", "STARTING", "BACKOFF", "STOPPING", "EXITED", "FATAL", "UNKNOWN"
 STATE2TEMPLATE = {
     STATE_STOPPED: EXIT_CODE_OK,
@@ -79,6 +78,13 @@ STATE2TEMPLATE = {
     STATE_EXITED: EXIT_CODE_WARNING,
     STATE_FATAL: EXIT_CODE_CRITICAL,
     STATE_UNKNOWN: EXIT_CODE_UNKNOWN,
+}
+# server connection URI's
+URI_TPL_HTTP, URI_TPL_HTTP_AUTH, URI_TPL_SOCKET = "http", "http-auth", "socket"
+URI = {
+    URI_TPL_HTTP: "http://{server}:{port}",
+    URI_TPL_HTTP_AUTH: "http://{username}:{password}@{server}:{port}",
+    URI_TPL_SOCKET: "unix://{server}",
 }
 
 
@@ -95,7 +101,7 @@ def parse_options():
     parser.add_option(
         "-s", "--server", action="store", dest="server",
         type="string", default="", metavar="SERVER",
-        help="server name or IP address"
+        help="server name, IP address or unix socket path"
     )
     parser.add_option(
         "-p", "--port", action="store", type="int", dest="port",
@@ -147,21 +153,35 @@ def get_status(options):
     :rtype: dict.
     """
 
+    payload = {  # server connection URI formatted string payload
+        "username": options.username,
+        "password": options.password,
+        "server": options.server,
+        "port": options.port,
+    }
+
     try:
-        if all([options.username, options.password, ]):
-            connection = xmlrpclib.Server("http://{username}:{password}@{server}:{port}/RPC2".format(**{
-                "username": options.username,
-                "password": options.password,
-                "server": options.server,
-                "port": options.port,
-            }))
-        else:
-            connection = xmlrpclib.Server("http://{server}:{port}/RPC2".format(**{
-                "server": options.server,
-                "port": options.port,
-            }))
+        if options.server.startswith("/") and stat.S_ISSOCK(os.stat(options.server).st_mode):  # communicate with server via unix socket (simple check is server address is path and path is unix socket)
+            try:
+                import supervisor.xmlrpc
+            except ImportError as error:
+                sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
+                sys.stderr.write("ERROR: Unix socket support not available! Please install nagios-check-supervisord with unix socket support: 'nagios-check-supervisord[unix-socket-support]' or install 'supervisor' separately.\n")
+                sys.exit(-1)
+
+            if all([options.username, options.password, ]):  # with auth
+                connection = xmlrpclib.ServerProxy("https://example.com/", transport=supervisor.xmlrpc.SupervisorTransport(options.username, options.password, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
+            else:
+                connection = xmlrpclib.ServerProxy("https://example.com/", transport=supervisor.xmlrpc.SupervisorTransport(None, None, serverurl=URI[URI_TPL_SOCKET].format(**payload)))
+
+        else:  # communicate with server via http
+            if all([options.username, options.password, ]):  # with auth
+                connection = xmlrpclib.Server(URI[URI_TPL_HTTP_AUTH].format(**payload))
+            else:
+                connection = xmlrpclib.Server(URI[URI_TPL_HTTP].format(**payload))
 
         return connection.supervisor.getAllProcessInfo()
+
     except Exception as error:
         if not options.quiet:
             sys.stdout.write("ERROR: Server communication problem. {error}\n".format(error=error))
