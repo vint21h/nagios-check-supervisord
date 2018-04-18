@@ -95,7 +95,7 @@ def parse_options():
     parser.add_option(
         "-s", "--server", action="store", dest="server",
         type="string", default="", metavar="SERVER",
-        help="server name or IP address"
+        help="server name, IP address or Unix Domain Socket"
     )
     parser.add_option(
         "-p", "--port", action="store", type="int", dest="port",
@@ -148,6 +148,18 @@ def get_status(options):
     """
 
     try:
+        if options.server.startswith('/'):
+            try:
+                import supervisor.xmlrpc
+            except ImportError as error:
+                sys.stderr.write("ERROR: Couldn't load module. {error}\n".format(error=error))
+                sys.stderr.write("ERROR: Unix Domain Socket support not working!\n")
+                sys.exit(-1)
+            socketpath = options.server
+            connection = xmlrpclib.ServerProxy('http://127.0.0.1',
+                                       transport=supervisor.xmlrpc.SupervisorTransport(
+                                            None, None, serverurl='unix://'+socketpath))
+            return connection.supervisor.getAllProcessInfo()
         if all([options.username, options.password, ]):
             connection = xmlrpclib.Server("http://{username}:{password}@{server}:{port}/RPC2".format(**{
                 "username": options.username,
