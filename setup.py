@@ -23,6 +23,11 @@ setup(
     packages=find_packages(),
     scripts=["check_supervisord.py", ],
     install_requires=[],
+    extras_require={
+        "unix-socket-support": [
+            "supervisor",
+        ],
+    },
     package_data={
         "nagios-check-supervisord": DATA,
     },
