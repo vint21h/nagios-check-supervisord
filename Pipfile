@@ -1,0 +1,48 @@
+# nagios-check-supervisord
+# Pipfile
+
+
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+
+[dev-packages]
+bandit = "==1.6.2"
+black = "==19.10b0"
+check-manifest = "==0.41"
+coverage = "==5.1"
+coveralls = "==2.0.0"
+dodgy = "==0.2.1"
+flake8 = "==3.7.9"
+flake8-annotations-complexity = "==0.0.4"
+flake8-bugbear = "==20.1.4"
+flake8-docstrings = "==1.5.0"
+flake8-mypy = "==17.8.0"
+isort = {extras = ["pipfile"], version = "==4.3.21"}
+mypy = "==0.770"
+pep8-naming = "==0.10.0"
+pre-commit = "==2.2.0"
+pre-commit-hooks = "==2.5.0"
+pygments = "==2.6.1"
+pylint = "==2.4.4"
+pyroma = "==2.6"
+pytest = "==5.4.1"
+pytest-cov = "==2.8.1"
+pytest-mock = "==3.0.0"
+pytest-tldr = "==0.2.1"
+readme_renderer = "==25.0"
+removestar = "==1.2.2"
+seed-isort-config = "==2.1.1"
+tox = "==3.14.6"
+tox-pyenv = "==1.1.0"
+tox-travis = "==0.12"
+twine = "==3.1.1"
+
+
+[packages]
+
+
+[requires]
+python_version = "3.8.2"
