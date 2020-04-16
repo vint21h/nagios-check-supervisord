@@ -11,6 +11,7 @@ python:
 before_install:
   - |
       pip install pipenv
+      pip install .[unix-socket-support]
       pip install .[test-old-python]
 script:
   - make tox

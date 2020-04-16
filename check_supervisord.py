@@ -222,7 +222,7 @@ class CheckSupervisord(object):
         if not options.server:
             parser.error("Required server address option missing")
         if options.username and not options.password:
-            parser.error("Required supervisord user password")
+            parser.error("Required supervisord user password missing")
 
         return options
 
@@ -325,7 +325,7 @@ class CheckSupervisord(object):
 
         for program in programs:
             try:
-                info = filter(lambda x: x["name"] == program, data)[0]
+                info = filter(lambda x: x["name"] == program, data)[0]  # type: ignore
                 output.update(
                     {
                         program: {
@@ -362,9 +362,9 @@ class CheckSupervisord(object):
         text = (
             ", ".join(
                 [
-                    str(self.OUTPUT_TEMPLATES[output[program]["template"]]["text"]).format(
-                        **output[program]
-                    )
+                    str(
+                        self.OUTPUT_TEMPLATES[output[program]["template"]]["text"]
+                    ).format(**output[program])
                     for program in sorted(
                         output.keys(),
                         key=lambda item: self.OUTPUT_TEMPLATES[
@@ -403,9 +403,6 @@ class CheckSupervisord(object):
 def main():
     """
     Program main.
-
-    :return: nothing
-    :rtype: None
     """
 
     checker = CheckSupervisord()  # type: ignore
