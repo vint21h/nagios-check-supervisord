@@ -117,7 +117,9 @@ def _get_options():
     :rtype: Namespace
     """
 
-    parser = ArgumentParser(description="Check supervisord programs status Nagios plugin")
+    parser = ArgumentParser(
+        description="Check supervisord programs status Nagios plugin"
+    )
     parser.add_argument(
         "-s",
         "--server",
@@ -206,9 +208,7 @@ def _get_options():
 
     options = parser.parse_args()
     # update stopped state value from command line argument
-    STATE_TO_TEMPLATE[
-        STATE_STOPPED
-    ] = options.stopped_state
+    STATE_TO_TEMPLATE[STATE_STOPPED] = options.stopped_state
 
     # check mandatory command line options supplied
     if not options.server:
@@ -263,15 +263,21 @@ def _get_data(options):
                 connection = xmlrpclib.ServerProxy(
                     "https://",
                     transport=supervisor.xmlrpc.SupervisorTransport(
-                        None, None, serverurl=URI_TEMPLATES[URI_TPL_SOCKET].format(**payload)
+                        None,
+                        None,
+                        serverurl=URI_TEMPLATES[URI_TPL_SOCKET].format(**payload),
                     ),
                 )
 
         else:  # communicate with server via http
             if all([options.username, options.password]):  # with auth
-                connection = xmlrpclib.Server(URI_TEMPLATES[URI_TPL_HTTP_AUTH].format(**payload))
+                connection = xmlrpclib.Server(
+                    URI_TEMPLATES[URI_TPL_HTTP_AUTH].format(**payload)
+                )
             else:
-                connection = xmlrpclib.Server(URI_TEMPLATES[URI_TPL_HTTP].format(**payload))
+                connection = xmlrpclib.Server(
+                    URI_TEMPLATES[URI_TPL_HTTP].format(**payload)
+                )
 
         return connection.supervisor.getAllProcessInfo()
 
