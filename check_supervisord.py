@@ -40,6 +40,7 @@ except ImportError:
 
 __all__ = [
     "main",
+    "CheckSupervisord",
 ]
 
 
@@ -115,7 +116,7 @@ class CheckSupervisord(object):
         Get command line args.
         """
 
-        self.options = self._get_options()
+        self.options = self._get_options()  # type: ignore
 
     def _get_options(self):
         """
@@ -361,7 +362,7 @@ class CheckSupervisord(object):
         text = (
             ", ".join(
                 [
-                    self.OUTPUT_TEMPLATES[output[program]["template"]]["text"].format(
+                    str(self.OUTPUT_TEMPLATES[output[program]["template"]]["text"]).format(
                         **output[program]
                     )
                     for program in sorted(
@@ -394,9 +395,9 @@ class CheckSupervisord(object):
         :rtype: Tuple[str, int]
         """
 
-        data = self._get_data()
+        data = self._get_data()  # type: ignore
 
-        return self._get_output(data=data)
+        return self._get_output(data=data)  # type: ignore
 
 
 def main():
@@ -407,7 +408,7 @@ def main():
     :rtype: None
     """
 
-    checker = CheckSupervisord()
+    checker = CheckSupervisord()  # type: ignore
     output, code = checker.check()
     sys.stdout.write(output)
     sys.exit(code)
@@ -415,4 +416,4 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    main()  # type: ignore
