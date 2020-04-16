@@ -21,7 +21,7 @@ DATA = [
 setup(
     name="nagios-check-supervisord",
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests.*", "tests"]),
     scripts=["check_supervisord.py"],
     package_data={"nagios-check-supervisord": DATA},
     data_files=[("share/doc/nagios-check-supervisord/", DATA)],

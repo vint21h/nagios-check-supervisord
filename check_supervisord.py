@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2015-2018 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015-2020 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord/]  # noqa: E501
 #
 # This file is part of nagios-check-supervisord.
@@ -26,7 +26,7 @@
 
 from __future__ import unicode_literals
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 import os
 import stat
 import sys
@@ -90,7 +90,7 @@ EXIT_CODES = {
     "FATAL",
     "UNKNOWN",
 )
-STATE2TEMPLATE = {
+STATE_TO_TEMPLATE = {
     STATE_STOPPED: EXIT_CODE_OK,
     STATE_RUNNING: EXIT_CODE_OK,
     STATE_STARTING: EXIT_CODE_WARNING,
@@ -102,74 +102,73 @@ STATE2TEMPLATE = {
 }
 # server connection URI's
 URI_TPL_HTTP, URI_TPL_HTTP_AUTH, URI_TPL_SOCKET = "http", "http-auth", "socket"
-URI = {
+URI_TEMPLATES = {
     URI_TPL_HTTP: "http://{server}:{port}",
     URI_TPL_HTTP_AUTH: "http://{username}:{password}@{server}:{port}",
     URI_TPL_SOCKET: "unix://{server}",
 }
 
 
-def parse_options():
+def _get_options():
     """
-    Commandline options arguments parsing.
+    Parse commandline options arguments.
 
-    :return: parsed commandline arguments.
-    :rtype: optparse.Values.
+    :return: parsed command line arguments
+    :rtype: Namespace
     """
 
-    version = "%%prog {version}".format(version=__version__)
-    parser = OptionParser(version=version)
-    parser.add_option(
+    parser = ArgumentParser(description="Check supervisord programs status Nagios plugin")
+    parser.add_argument(
         "-s",
         "--server",
         action="store",
         dest="server",
-        type="string",
+        type=str,
         default="",
         metavar="SERVER",
         help="server name, IP address or unix socket path",
     )
-    parser.add_option(
+    parser.add_argument(
         "-p",
         "--port",
         action="store",
-        type="int",
+        type=int,
         dest="port",
         default=9001,
         metavar="PORT",
         help="port number",
     )
-    parser.add_option(
+    parser.add_argument(
         "-P",
         "--programs",
         action="store",
         dest="programs",
-        type="string",
+        type=str,
         default="",
         metavar="PROGRAMS",
         help="comma separated programs list, or empty for all programs in supervisord response",  # noqa: E501
     )
-    parser.add_option(
+    parser.add_argument(
         "-u",
         "--username",
         action="store",
         dest="username",
-        type="string",
+        type=str,
         default="",
         metavar="USERNAME",
         help="supervisord user",
     )
-    parser.add_option(
+    parser.add_argument(
         "-S",
         "--password",
         action="store",
         dest="password",
-        type="string",
+        type=str,
         default="",
         metavar="PASSWORD",
         help="supervisord user password",
     )
-    parser.add_option(
+    parser.add_argument(
         "-q",
         "--quiet",
         metavar="QUIET",
@@ -178,31 +177,38 @@ def parse_options():
         dest="quiet",
         help="be quiet",
     )
-    parser.add_option(
+    parser.add_argument(
         "--stopped-state",
         action="store",
         dest="stopped_state",
-        type="choice",
+        type=str,
         choices=EXIT_CODES.keys(),
         default=EXIT_CODE_OK,
         metavar="STOPPED_STATE",
         help="stopped state",
     )
-    parser.add_option(
+    parser.add_argument(
         "--network-errors-exit-code",
         action="store",
         dest="network_errors_exit_code",
-        type="choice",
+        type=str,
         choices=EXIT_CODES.keys(),
         default=EXIT_CODE_UNKNOWN,
         metavar="NETWORK_ERRORS_EXIT_CODE",
         help="network errors exit code",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="{version}".format(**{"version": __version__}),
+    )
 
-    options = parser.parse_args(sys.argv)[0]
-    STATE2TEMPLATE[
+    options = parser.parse_args()
+    # update stopped state value from command line argument
+    STATE_TO_TEMPLATE[
         STATE_STOPPED
-    ] = options.stopped_state  # update stopped state value from command line argument
+    ] = options.stopped_state
 
     # check mandatory command line options supplied
     if not options.server:
@@ -213,14 +219,12 @@ def parse_options():
     return options
 
 
-def get_status(options):
+def _get_data(options):
     """
-    Get programs statuses.
+    Get and return data from supervisord.
 
-    :param options: parsed commandline arguments.
-    :type options: optparse.Values.
-    :return: supervisord XML-RPC call result.
-    :rtype: dict.
+    :return: data from supervisord
+    :rtype: Dict[]
     """
 
     payload = {  # server connection URI formatted string payload
@@ -238,13 +242,13 @@ def get_status(options):
             try:
                 import supervisor.xmlrpc
             except ImportError as error:
-                sys.stderr.write(
+                sys.stdout.write(
                     "ERROR: Couldn't load module. {error}\n".format(error=error)
                 )
-                sys.stderr.write(
+                sys.stdout.write(
                     "ERROR: Unix socket support not available! Please install nagios-check-supervisord with unix socket support: 'nagios-check-supervisord[unix-socket-support]' or install 'supervisor' separately.\n"  # noqa: E501
                 )
-                sys.exit(-1)
+                sys.exit(3)
 
             if all([options.username, options.password]):  # with auth
                 connection = xmlrpclib.ServerProxy(
@@ -252,22 +256,22 @@ def get_status(options):
                     transport=supervisor.xmlrpc.SupervisorTransport(
                         options.username,
                         options.password,
-                        serverurl=URI[URI_TPL_SOCKET].format(**payload),
+                        serverurl=URI_TEMPLATES[URI_TPL_SOCKET].format(**payload),
                     ),
                 )
             else:
                 connection = xmlrpclib.ServerProxy(
                     "https://",
                     transport=supervisor.xmlrpc.SupervisorTransport(
-                        None, None, serverurl=URI[URI_TPL_SOCKET].format(**payload)
+                        None, None, serverurl=URI_TEMPLATES[URI_TPL_SOCKET].format(**payload)
                     ),
                 )
 
         else:  # communicate with server via http
             if all([options.username, options.password]):  # with auth
-                connection = xmlrpclib.Server(URI[URI_TPL_HTTP_AUTH].format(**payload))
+                connection = xmlrpclib.Server(URI_TEMPLATES[URI_TPL_HTTP_AUTH].format(**payload))
             else:
-                connection = xmlrpclib.Server(URI[URI_TPL_HTTP].format(**payload))
+                connection = xmlrpclib.Server(URI_TEMPLATES[URI_TPL_HTTP].format(**payload))
 
         return connection.supervisor.getAllProcessInfo()
 
@@ -279,16 +283,14 @@ def get_status(options):
         sys.exit(EXIT_CODES.get(options.network_errors_exit_code, EXIT_CODE_UNKNOWN))
 
 
-def create_output(data, options):
+def _get_output(data, options):
     """
     Create Nagios and human readable supervisord statuses.
 
-    :param data: supervisord XML-RPC call result.
-    :type data: dict.
-    :param options: parsed commandline arguments.
-    :type options: optparse.Values.
-    :return: Nagios and human readable supervisord statuses and exit code.
-    :rtype: (str, int).
+    :param data: supervisord XML-RPC call result
+    :type data: Dict[]
+    :return: Nagios and human readable supervisord statuses and exit code
+    :rtype: Tuple[str, int]
     """
 
     output = {}
@@ -305,7 +307,7 @@ def create_output(data, options):
                 {
                     program: {
                         "name": program,
-                        "template": STATE2TEMPLATE[program_data["statename"]],
+                        "template": STATE_TO_TEMPLATE[program_data["statename"]],
                         "status": program_data["spawnerr"]
                         if program_data["spawnerr"]
                         else program_data["statename"],
@@ -363,15 +365,12 @@ def main():
     Program main.
     """
 
-    options = parse_options()
-    output, code = create_output(get_status(options), options)
+    options = _get_options()
+    output, code = _get_output(data=_get_data(options=options), options=options)
     sys.stdout.write(output)
     sys.exit(code)
 
 
 if __name__ == "__main__":
-    """
-    Run program main.
-    """
 
     main()
