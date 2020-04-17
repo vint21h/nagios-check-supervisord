@@ -27,6 +27,7 @@
 from __future__ import unicode_literals
 
 from argparse import ArgumentParser
+from collections import OrderedDict
 import os
 import stat
 import sys
@@ -313,7 +314,7 @@ class CheckSupervisord(object):
         :rtype: Tuple[str, int]
         """
 
-        output = {}
+        states = OrderedDict()
         programs = (
             map(
                 lambda program: program.strip(),
@@ -326,7 +327,7 @@ class CheckSupervisord(object):
         for program in programs:
             try:
                 info = filter(lambda x: x["name"] == program, data)[0]  # type: ignore
-                output.update(
+                states.update(
                     {
                         program: {
                             "name": program,
@@ -338,7 +339,7 @@ class CheckSupervisord(object):
                     }
                 )
             except IndexError:
-                output.update(
+                states.update(
                     {program: {"name": program, "template": "unknown", "status": ""}}
                 )
 
@@ -350,7 +351,7 @@ class CheckSupervisord(object):
                 [
                     (status, self.OUTPUT_TEMPLATES[status]["priority"])
                     for status in list(
-                        set([output[program]["template"] for program in output.keys()])
+                        set([states[program]["template"] for program in states.keys()])
                     )
                 ],
                 key=lambda item: item[1],
@@ -359,16 +360,16 @@ class CheckSupervisord(object):
         # if no programs found or configured by supervisord
         # set status ok and custom message
         status = statuses[0] if statuses else self.EXIT_CODE_OK
-        text = (
+        output = (
             ", ".join(
                 [
                     str(
-                        self.OUTPUT_TEMPLATES[output[program]["template"]]["text"]
-                    ).format(**output[program])
+                        self.OUTPUT_TEMPLATES[states[program]["template"]]["text"]
+                    ).format(**states[program])
                     for program in sorted(
-                        output.keys(),
+                        states.keys(),
                         key=lambda item: self.OUTPUT_TEMPLATES[
-                            output[item]["template"]
+                            states[item]["template"]
                         ]["priority"],
                     )
                 ]
@@ -383,7 +384,9 @@ class CheckSupervisord(object):
         # return full status string with main status
         # for multiple programs and all programs states
         return (
-            "{status}: {output}\n".format(**{"status": status.upper(), "output": text}),
+            "{status}: {output}\n".format(
+                **{"status": status.upper(), "output": output}
+            ),
             code,
         )
 
