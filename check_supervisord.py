@@ -211,7 +211,7 @@ class CheckSupervisord(object):
             "-v",
             "--version",
             action="version",
-            version="{version}".format(**{"version": __version__}),
+            version="{version}".format(version=__version__),
         )
 
         options = parser.parse_args()
@@ -220,9 +220,9 @@ class CheckSupervisord(object):
 
         # check mandatory command line options supplied
         if not options.server:
-            parser.error("Required server address option missing")
+            parser.error(message="Required server address option missing")
         if options.username and not options.password:
-            parser.error("Required supervisord user password missing")
+            parser.error(message="Required supervisord user password missing")
 
         return options
 
@@ -245,7 +245,7 @@ class CheckSupervisord(object):
             if self.options.server.startswith("/") and stat.S_ISSOCK(
                 os.stat(self.options.server).st_mode
             ):  # communicate with server via unix socket
-                # (simple check is server address is path and path is unix socket)
+                # (check is server address is path and path is unix socket)
                 try:
                     import supervisor.xmlrpc
                 except ImportError as error:
@@ -272,8 +272,8 @@ class CheckSupervisord(object):
                     connection = xmlrpclib.ServerProxy(
                         uri="https://",
                         transport=supervisor.xmlrpc.SupervisorTransport(
-                            None,
-                            None,
+                            username=None,
+                            password=None,
                             serverurl=self.URI_TEMPLATES[self.URI_TPL_SOCKET].format(
                                 **payload
                             ),
