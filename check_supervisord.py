@@ -338,7 +338,7 @@ class CheckSupervisord(object):
                         }
                     }
                 )
-            except IndexError:
+            except ValueError:
                 states.update(
                     {program: {"name": program, "template": "unknown", "status": ""}}
                 )
