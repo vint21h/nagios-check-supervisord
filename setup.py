@@ -97,7 +97,7 @@ setup(
             "twine==3.1.1",
         ],
         "test-old-python": [
-            "check-manifest==0.42",
+            "check-manifest==0.41",
             "contextlib2==0.6.0.post1",
             "coverage==5.1",
             "coveralls==1.11.1",
