@@ -33,6 +33,9 @@ __all__ = [
 def test__get_options(mocker):
     """
     Test "_get_options" method must return argparse namespace.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
     """
 
     mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
@@ -44,6 +47,9 @@ def test__get_options(mocker):
 def test__get_options__missing_server_option(mocker):
     """
     Test "_get_options" method must exit with server option missing error.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
     """
 
     out = StringIO()
@@ -61,6 +67,9 @@ def test__get_options__missing_server_option(mocker):
 def test__get_options__missing_password_option(mocker):
     """
     Test "_get_options" method must exit with server option missing error.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
     """
 
     out = StringIO()

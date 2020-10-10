@@ -29,8 +29,8 @@ from __future__ import unicode_literals
 import os
 import sys
 import stat
-from argparse import ArgumentParser
 from collections import OrderedDict
+from argparse import Namespace, ArgumentParser  # noqa: F401
 
 
 try:
@@ -52,7 +52,7 @@ __version__ = ".".join(map(str, VERSION))
 
 class CheckSupervisord(object):
     """
-    Check supervisord programs status Nagios plugin
+    Check supervisord programs status Nagios plugin.
     """
 
     OUTPUT_TEMPLATES = {
