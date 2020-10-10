@@ -326,7 +326,7 @@ class CheckSupervisord(object):
 
         for program in programs:
             try:
-                info = filter(lambda x: x["name"] == program, data)[0]  # type: ignore
+                info = min(filter(lambda x: x["name"] == program, data))
                 states.update(
                     {
                         program: {
