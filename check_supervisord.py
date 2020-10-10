@@ -26,17 +26,17 @@
 
 from __future__ import unicode_literals
 
+import os
+import sys
+import stat
 from argparse import ArgumentParser
 from collections import OrderedDict
-import os
-import stat
-import sys
 
 
 try:
     import xmlrpc.client as xmlrpclib
 except ImportError:
-    import xmlrpclib
+    import xmlrpclib  # type: ignore
 
 
 __all__ = [
@@ -354,7 +354,7 @@ class CheckSupervisord(object):
                         set([states[program]["template"] for program in states.keys()])
                     )
                 ],
-                key=lambda item: item[1],
+                key=lambda item: item[1],  # type: ignore
             )
         ]
         # if no programs found or configured by supervisord
@@ -368,7 +368,7 @@ class CheckSupervisord(object):
                     ).format(**states[program])
                     for program in sorted(
                         states.keys(),
-                        key=lambda item: self.OUTPUT_TEMPLATES[
+                        key=lambda item: self.OUTPUT_TEMPLATES[  # type: ignore
                             states[item]["template"]
                         ]["priority"],
                     )
@@ -409,7 +409,7 @@ def main():
     """
 
     checker = CheckSupervisord()  # type: ignore
-    output, code = checker.check()
+    output, code = checker.check()  # type: ignore
     sys.stdout.write(output)
     sys.exit(code)
 

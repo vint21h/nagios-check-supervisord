@@ -6,11 +6,19 @@
 
 from __future__ import unicode_literals
 
-from argparse import Namespace
 from io import StringIO
+from argparse import Namespace
 
-import contextlib2
 import pytest
+import contextlib2
+
+
+try:
+    from pytest_mock.plugin import MockerFixture  # pylint: disable=W0611  # noqa: F401
+except ImportError:
+    from pytest_mock.plugin import (  # type: ignore  # pylint: disable=W0611  # noqa: F401,E501
+        MockFixture as MockerFixture,
+    )
 
 from check_supervisord import CheckSupervisord
 
