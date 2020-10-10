@@ -30,7 +30,7 @@ import os
 import sys
 import stat
 from collections import OrderedDict
-from argparse import Namespace, ArgumentParser  # noqa: F401
+from argparse import Namespace, ArgumentParser  # pylint: disable=W0611  # noqa: F401
 
 
 try:
