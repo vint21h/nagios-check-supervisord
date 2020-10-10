@@ -2,5 +2,6 @@
 # MANIFEST.in
 
 
+include check_supervisord.py
 recursive-include *.pyi
 recursive-exclude tests *.py
