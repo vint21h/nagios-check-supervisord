@@ -76,6 +76,7 @@ setup(
             "flake8-docstrings==1.5.0",
             "flake8-mypy==17.8.0",
             "flake8==3.7.9",
+            "interrogate==1.2.0",
             "isort[pipfile]==4.3.21",
             "mypy==0.770",
             "pep8-naming==0.10.0",
