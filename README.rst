@@ -4,7 +4,7 @@
 A nagios-check-supervisord documentation
 ========================================
 
-|Travis|_ |Coveralls|_ |Requires|_ |pypi-license|_ |pypi-version|_ |pypi-python-version|_ |pypi-format|_ |pypi-wheel|_ |pypi-status|_
+|Travis|_ |Coveralls|_ |pypi-license|_ |pypi-version|_ |pypi-python-version|_ |pypi-format|_ |pypi-wheel|_ |pypi-status|_
 
     *nagios-check-supervisord is a Nagios-plugin that check supervisord (http://supervisord.org/) programs status*
 
@@ -72,8 +72,6 @@ For other authors list see AUTHORS file.
     :alt: Travis
 .. |Coveralls| image:: https://coveralls.io/repos/github/vint21h/nagios-check-supervisord/badge.svg?branch=master
     :alt: Coveralls
-.. |Requires| image:: https://requires.io/github/vint21h/nagios-check-supervisord/requirements.svg?branch=master
-    :alt: Requires
 .. |pypi-license| image:: https://img.shields.io/pypi/l/nagios-check-supervisord
     :alt: License
 .. |pypi-version| image:: https://img.shields.io/pypi/v/nagios-check-supervisord
@@ -88,7 +86,6 @@ For other authors list see AUTHORS file.
     :alt: Package status
 .. _Travis: https://travis-ci.org/vint21h/nagios-check-supervisord/
 .. _Coveralls: https://coveralls.io/github/vint21h/nagios-check-supervisord?branch=master
-.. _Requires: https://requires.io/github/vint21h/nagios-check-supervisord/requirements/?branch=master
 .. _pypi-license: https://pypi.org/project/nagios-check-supervisord/
 .. _pypi-version: https://pypi.org/project/nagios-check-supervisord/
 .. _pypi-python-version: https://pypi.org/project/nagios-check-supervisord/
