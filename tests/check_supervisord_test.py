@@ -6,6 +6,7 @@
 
 from __future__ import unicode_literals
 
+import tempfile
 from io import StringIO
 from argparse import Namespace
 
@@ -186,15 +187,16 @@ def test__get_connection__unix_support_not_available(mocker, capsys):
     :type capsys: CaptureFixture
     """
 
-    mocker.patch(
-        "sys.argv",
-        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],
-    )
-    mocker.patch.dict("sys.modules", {"supervisor": None})
-    mocker.patch("stat.S_ISSOCK", return_value=True)
+    with tempfile.NamedTemporaryFile() as sock:
+        mocker.patch(
+            "sys.argv",
+            ["check_supervisord.py", "-s", sock.name],
+        )
+        mocker.patch.dict("sys.modules", {"supervisor": None})
+        mocker.patch("stat.S_ISSOCK", return_value=True)
 
-    with pytest.raises(SystemExit):
-        CheckSupervisord()._get_connection()
+        with pytest.raises(SystemExit):
+            CheckSupervisord()._get_connection()
 
     assert (  # nosec: B101
         "ERROR: Couldn't load module." in capsys.readouterr().out.strip()
@@ -209,13 +211,14 @@ def test__get_connection__socket(mocker):
     :type mocker: MockerFixture
     """
 
-    mocker.patch(
-        "sys.argv",
-        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],
-    )
-    mocker.patch("stat.S_ISSOCK", return_value=True)
+    with tempfile.NamedTemporaryFile() as sock:
+        mocker.patch(
+            "sys.argv",
+            ["check_supervisord.py", "-s", sock.name],
+        )
+        mocker.patch("stat.S_ISSOCK", return_value=True)
 
-    result = CheckSupervisord()._get_connection()
+        result = CheckSupervisord()._get_connection()
 
     assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
 
@@ -228,21 +231,22 @@ def test__get_connection__socket_auth(mocker):
     :type mocker: MockerFixture
     """
 
-    mocker.patch(
-        "sys.argv",
-        [
-            "check_supervisord.py",
-            "-s",
-            "/tmp/supervisord.sock",
-            "-u",
-            "supervisord",
-            "-S",
-            "password",
-        ],
-    )
-    mocker.patch("stat.S_ISSOCK", return_value=True)
+    with tempfile.NamedTemporaryFile() as sock:
+        mocker.patch(
+            "sys.argv",
+            [
+                "check_supervisord.py",
+                "-s",
+                sock.name,
+                "-u",
+                "supervisord",
+                "-S",
+                "password",
+            ],
+        )
+        mocker.patch("stat.S_ISSOCK", return_value=True)
 
-    result = CheckSupervisord()._get_connection()
+        result = CheckSupervisord()._get_connection()
 
     assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
 

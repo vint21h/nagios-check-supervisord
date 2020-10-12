@@ -275,7 +275,7 @@ class CheckSupervisord(object):
                     transport=supervisor.xmlrpc.SupervisorTransport(
                         self.options.username,
                         self.options.password,
-                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),
+                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),  # type: ignore  # noqa: E501
                     ),
                 )
             else:
@@ -284,18 +284,18 @@ class CheckSupervisord(object):
                     transport=supervisor.xmlrpc.SupervisorTransport(
                         username=None,
                         password=None,
-                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),
+                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),  # type: ignore  # noqa: E501
                     ),
                 )
 
         else:  # communicate with server via http
             if all([self.options.username, self.options.password]):  # with auth
                 connection = xmlrpclib.Server(
-                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP_AUTH)
+                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP_AUTH)  # type: ignore  # noqa: E501
                 )
             else:
                 connection = xmlrpclib.Server(
-                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP)
+                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP)  # type: ignore  # noqa: E501
                 )
 
         return connection
@@ -309,7 +309,7 @@ class CheckSupervisord(object):
         """
 
         try:
-            connection = self._get_connection()
+            connection = self._get_connection()  # type: ignore  # noqa: E501
 
             return connection.supervisor.getAllProcessInfo()
 
