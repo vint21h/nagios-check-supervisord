@@ -260,7 +260,7 @@ class CheckSupervisord(object):
             # (check is server address is path and path is unix socket)
             try:
                 import supervisor.xmlrpc
-            except (ModuleNotFoundError, ImportError) as error:  # noqa: B014
+            except ImportError as error:  # noqa: B014
                 sys.stdout.write(
                     "ERROR: Couldn't load module. {error}\n".format(error=error)
                 )
