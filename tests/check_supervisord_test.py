@@ -112,7 +112,7 @@ def test__get_connection_string__socket(mocker):
 
     mocker.patch(
         "sys.argv",
-        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],
+        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],  # nosec: B108
     )
 
     checker = CheckSupervisord()
