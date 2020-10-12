@@ -9,6 +9,12 @@ from __future__ import unicode_literals
 from io import StringIO
 from argparse import Namespace
 
+
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    import xmlrpclib  # type: ignore
+
 import pytest
 import contextlib2
 
@@ -30,6 +36,11 @@ __all__ = [
     "test__get_connection_string__socket",
     "test__get_connection_string__http",
     "test__get_connection_string__http_auth",
+    "test__get_connection__unix_support_not_available",
+    "test__get_connection__socket",
+    "test__get_connection__socket_auth",
+    "test__get_connection__http",
+    "test__get_connection__http_auth",
 ]
 
 
@@ -105,7 +116,7 @@ def test__get_connection_string__socket(mocker):
 
     checker = CheckSupervisord()
 
-    assert (
+    assert (  # nosec: B101
         checker._get_connection_string(tpl=checker.URI_TPL_SOCKET)
         == "unix:///tmp/supervisord.sock"
     )
@@ -126,7 +137,7 @@ def test__get_connection_string__http(mocker):
 
     checker = CheckSupervisord()
 
-    assert (
+    assert (  # nosec: B101
         checker._get_connection_string(tpl=checker.URI_TPL_HTTP)
         == "http://127.0.0.1:9001"
     )
@@ -134,7 +145,8 @@ def test__get_connection_string__http(mocker):
 
 def test__get_connection_string__http_auth(mocker):
     """
-    Test "_get_connection_string" method must return connection string for http with authorization.
+    Test "_get_connection_string" method must return connection string for
+    http with authorization.
 
     :param mocker: mock
     :type mocker: MockerFixture
@@ -157,7 +169,125 @@ def test__get_connection_string__http_auth(mocker):
 
     checker = CheckSupervisord()
 
-    assert (
+    assert (  # nosec: B101
         checker._get_connection_string(tpl=checker.URI_TPL_HTTP_AUTH)
         == "http://supervisord:password@127.0.0.1:9001"
     )
+
+
+def test__get_connection__unix_support_not_available(mocker, capsys):
+    """
+    Test "_get_connection" method must exit with
+    couldn't load supervisord library error.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    :param capsys: std capture
+    :type capsys: CaptureFixture
+    """
+
+    mocker.patch(
+        "sys.argv",
+        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],
+    )
+    mocker.patch.dict("sys.modules", {"supervisor": None})
+    mocker.patch("stat.S_ISSOCK", return_value=True)
+
+    with pytest.raises(SystemExit):
+        CheckSupervisord()._get_connection()
+
+    assert (  # nosec: B101
+        "ERROR: Couldn't load module." in capsys.readouterr().out.strip()
+    )
+
+
+def test__get_connection__socket(mocker):
+    """
+    Test "_get_connection" method must return socket connection.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch(
+        "sys.argv",
+        ["check_supervisord.py", "-s", "/tmp/supervisord.sock"],
+    )
+    mocker.patch("stat.S_ISSOCK", return_value=True)
+
+    result = CheckSupervisord()._get_connection()
+
+    assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
+
+
+def test__get_connection__socket_auth(mocker):
+    """
+    Test "_get_connection" method must return socket connection with authorization.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch(
+        "sys.argv",
+        [
+            "check_supervisord.py",
+            "-s",
+            "/tmp/supervisord.sock",
+            "-u",
+            "supervisord",
+            "-S",
+            "password",
+        ],
+    )
+    mocker.patch("stat.S_ISSOCK", return_value=True)
+
+    result = CheckSupervisord()._get_connection()
+
+    assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
+
+
+def test__get_connection__http(mocker):
+    """
+    Test "_get_connection" method must return http connection.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch(
+        "sys.argv",
+        ["check_supervisord.py", "-s", "127.0.0.1"],
+    )
+
+    result = CheckSupervisord()._get_connection()
+
+    assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
+
+
+def test__get_connection__http_auth(mocker):
+    """
+    Test "_get_connection" method must return http connection with authorization.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch(
+        "sys.argv",
+        [
+            "check_supervisord.py",
+            "-s",
+            "127.0.0.1",
+            "-p",
+            "9001",
+            "-u",
+            "supervisord",
+            "-S",
+            "password",
+        ],
+    )
+
+    result = CheckSupervisord()._get_connection()
+
+    assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101

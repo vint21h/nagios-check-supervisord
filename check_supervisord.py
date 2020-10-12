@@ -246,6 +246,60 @@ class CheckSupervisord(object):
 
         return self.URI_TEMPLATES[tpl].format(**payload)
 
+    def _get_connection(self):
+        """
+        Creates and return connection to supervisord.
+
+        :return: connection to supervisord
+        :rtype: ServerProxy
+        """
+
+        if self.options.server.startswith("/") and stat.S_ISSOCK(
+            os.stat(self.options.server).st_mode
+        ):  # communicate with server via unix socket
+            # (check is server address is path and path is unix socket)
+            try:
+                import supervisor.xmlrpc
+            except (ModuleNotFoundError, ImportError) as error:  # noqa: B014
+                sys.stdout.write(
+                    "ERROR: Couldn't load module. {error}\n".format(error=error)
+                )
+                sys.stdout.write(
+                    "ERROR: Unix socket support not available! Please install nagios-check-supervisord with unix socket support: 'nagios-check-supervisord[unix-socket-support]' or install 'supervisor' separately.\n"  # noqa: E501
+                )
+                sys.exit(3)
+
+            if all([self.options.username, self.options.password]):  # with auth
+                connection = xmlrpclib.ServerProxy(
+                    uri="https://",
+                    transport=supervisor.xmlrpc.SupervisorTransport(
+                        self.options.username,
+                        self.options.password,
+                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),
+                    ),
+                )
+            else:
+                connection = xmlrpclib.ServerProxy(
+                    uri="https://",
+                    transport=supervisor.xmlrpc.SupervisorTransport(
+                        username=None,
+                        password=None,
+                        serverurl=self._get_connection_string(tpl=self.URI_TPL_SOCKET),
+                    ),
+                )
+
+        else:  # communicate with server via http
+            if all([self.options.username, self.options.password]):  # with auth
+                connection = xmlrpclib.Server(
+                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP_AUTH)
+                )
+            else:
+                connection = xmlrpclib.Server(
+                    uri=self._get_connection_string(tpl=self.URI_TPL_HTTP)
+                )
+
+        return connection
+
     def _get_data(self):
         """
         Get and return data from supervisord.
@@ -255,53 +309,7 @@ class CheckSupervisord(object):
         """
 
         try:
-            if self.options.server.startswith("/") and stat.S_ISSOCK(
-                os.stat(self.options.server).st_mode
-            ):  # communicate with server via unix socket
-                # (check is server address is path and path is unix socket)
-                try:
-                    import supervisor.xmlrpc
-                except ImportError as error:
-                    sys.stdout.write(
-                        "ERROR: Couldn't load module. {error}\n".format(error=error)
-                    )
-                    sys.stdout.write(
-                        "ERROR: Unix socket support not available! Please install nagios-check-supervisord with unix socket support: 'nagios-check-supervisord[unix-socket-support]' or install 'supervisor' separately.\n"  # noqa: E501
-                    )
-                    sys.exit(3)
-
-                if all([self.options.username, self.options.password]):  # with auth
-                    connection = xmlrpclib.ServerProxy(
-                        uri="https://",
-                        transport=supervisor.xmlrpc.SupervisorTransport(
-                            self.options.username,
-                            self.options.password,
-                            serverurl=self._get_connection_string(
-                                tpl=self.URI_TPL_SOCKET
-                            ),
-                        ),
-                    )
-                else:
-                    connection = xmlrpclib.ServerProxy(
-                        uri="https://",
-                        transport=supervisor.xmlrpc.SupervisorTransport(
-                            username=None,
-                            password=None,
-                            serverurl=self._get_connection_string(
-                                tpl=self.URI_TPL_SOCKET
-                            ),
-                        ),
-                    )
-
-            else:  # communicate with server via http
-                if all([self.options.username, self.options.password]):  # with auth
-                    connection = xmlrpclib.Server(
-                        uri=self._get_connection_string(tpl=self.URI_TPL_HTTP_AUTH)
-                    )
-                else:
-                    connection = xmlrpclib.Server(
-                        uri=self._get_connection_string(tpl=self.URI_TPL_HTTP)
-                    )
+            connection = self._get_connection()
 
             return connection.supervisor.getAllProcessInfo()
 

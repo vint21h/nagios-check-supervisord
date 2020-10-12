@@ -5,6 +5,5 @@
  - Sort programs by status priority
  - Simplify get one program info
  - Simplify get main status code
- - Split '_get_data' method to '_get_data' and '_get_connection' methods equivalently to functionality
  - Split '_get_output' method to '_get_status', '_get_code' and '_get_output' methods equivalently to functionality
  - Write tests!!1
