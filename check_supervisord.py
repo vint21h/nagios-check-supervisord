@@ -227,6 +227,25 @@ class CheckSupervisord(object):
 
         return options
 
+    def _get_connection_string(self, tpl):
+        """
+        Creates server connection URI formatted connection string.
+
+        :param tpl: connection string template name
+        :type tpl: str
+        :return: server connection URI formatted connection string
+        :rtype: str
+        """
+
+        payload = {
+            "username": self.options.username,
+            "password": self.options.password,
+            "server": self.options.server,
+            "port": self.options.port,
+        }
+
+        return self.URI_TEMPLATES[tpl].format(**payload)
+
     def _get_data(self):
         """
         Get and return data from supervisord.
@@ -234,13 +253,6 @@ class CheckSupervisord(object):
         :return: data from supervisord
         :rtype: List[Dict[str, Union[str, int]]]
         """
-
-        payload = {  # server connection URI formatted string payload
-            "username": self.options.username,
-            "password": self.options.password,
-            "server": self.options.server,
-            "port": self.options.port,
-        }
 
         try:
             if self.options.server.startswith("/") and stat.S_ISSOCK(
@@ -264,8 +276,8 @@ class CheckSupervisord(object):
                         transport=supervisor.xmlrpc.SupervisorTransport(
                             self.options.username,
                             self.options.password,
-                            serverurl=self.URI_TEMPLATES[self.URI_TPL_SOCKET].format(
-                                **payload
+                            serverurl=self._get_connection_string(
+                                tpl=self.URI_TPL_SOCKET
                             ),
                         ),
                     )
@@ -275,8 +287,8 @@ class CheckSupervisord(object):
                         transport=supervisor.xmlrpc.SupervisorTransport(
                             username=None,
                             password=None,
-                            serverurl=self.URI_TEMPLATES[self.URI_TPL_SOCKET].format(
-                                **payload
+                            serverurl=self._get_connection_string(
+                                tpl=self.URI_TPL_SOCKET
                             ),
                         ),
                     )
@@ -284,11 +296,11 @@ class CheckSupervisord(object):
             else:  # communicate with server via http
                 if all([self.options.username, self.options.password]):  # with auth
                     connection = xmlrpclib.Server(
-                        uri=self.URI_TEMPLATES[self.URI_TPL_HTTP_AUTH].format(**payload)
+                        uri=self._get_connection_string(tpl=self.URI_TPL_HTTP_AUTH)
                     )
                 else:
                     connection = xmlrpclib.Server(
-                        uri=self.URI_TEMPLATES[self.URI_TPL_HTTP].format(**payload)
+                        uri=self._get_connection_string(tpl=self.URI_TPL_HTTP)
                     )
 
             return connection.supervisor.getAllProcessInfo()
