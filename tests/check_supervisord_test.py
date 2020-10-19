@@ -34,9 +34,9 @@ __all__ = [
     "test__get_options",
     "test__get_options__missing_server_option",
     "test__get_options__missing_password_option",
-    "test__get_connection_string__socket",
-    "test__get_connection_string__http",
-    "test__get_connection_string__http_auth",
+    "test__get_connection_uri__socket",
+    "test__get_connection_uri__http",
+    "test__get_connection_uri__http_auth",
     "test__get_connection__unix_support_not_available",
     "test__get_connection__socket",
     "test__get_connection__socket_auth",
@@ -102,9 +102,9 @@ def test__get_options__missing_password_option(mocker):
     )
 
 
-def test__get_connection_string__socket(mocker):
+def test__get_connection_uri__socket(mocker):
     """
-    Test "_get_connection_string" method must return connection string for socket.
+    Test "_get_connection_uri" method must return connection string for socket.
 
     :param mocker: mock
     :type mocker: MockerFixture
@@ -118,14 +118,14 @@ def test__get_connection_string__socket(mocker):
     checker = CheckSupervisord()
 
     assert (  # nosec: B101
-        checker._get_connection_string(tpl=checker.URI_TPL_SOCKET)
+        checker._get_connection_uri(tpl=checker.URI_TPL_SOCKET)
         == "unix:///tmp/supervisord.sock"
     )
 
 
-def test__get_connection_string__http(mocker):
+def test__get_connection_uri__http(mocker):
     """
-    Test "_get_connection_string" method must return connection string for http.
+    Test "_get_connection_uri" method must return connection string for http.
 
     :param mocker: mock
     :type mocker: MockerFixture
@@ -139,14 +139,13 @@ def test__get_connection_string__http(mocker):
     checker = CheckSupervisord()
 
     assert (  # nosec: B101
-        checker._get_connection_string(tpl=checker.URI_TPL_HTTP)
-        == "http://127.0.0.1:9001"
+        checker._get_connection_uri(tpl=checker.URI_TPL_HTTP) == "http://127.0.0.1:9001"
     )
 
 
-def test__get_connection_string__http_auth(mocker):
+def test__get_connection_uri__http_auth(mocker):
     """
-    Test "_get_connection_string" method must return connection string for
+    Test "_get_connection_uri" method must return connection string for
     http with authorization.
 
     :param mocker: mock
@@ -171,7 +170,7 @@ def test__get_connection_string__http_auth(mocker):
     checker = CheckSupervisord()
 
     assert (  # nosec: B101
-        checker._get_connection_string(tpl=checker.URI_TPL_HTTP_AUTH)
+        checker._get_connection_uri(tpl=checker.URI_TPL_HTTP_AUTH)
         == "http://supervisord:password@127.0.0.1:9001"
     )
 
