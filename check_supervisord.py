@@ -324,6 +324,19 @@ class CheckSupervisord(object):
                 )
             )
 
+    def _get_code(self, status):
+        """
+        Create exit code.
+
+        :param status: main check status
+        :type status: str
+        :return: exit code
+        :rtype: int
+        """
+
+        # create exit code (unknown if something happened wrong)
+        return self.EXIT_CODES.get(status, self.EXIT_CODE_UNKNOWN)
+
     def _get_output(self, data):
         """
         Create Nagios and human readable supervisord statuses.

@@ -42,6 +42,10 @@ __all__ = [
     "test__get_connection__socket_auth",
     "test__get_connection__http",
     "test__get_connection__http_auth",
+    "test__get_code",
+    "test__get_code__warning",
+    "test__get_code__critical",
+    "test__get_code__unknown",
 ]
 
 
@@ -294,3 +298,66 @@ def test__get_connection__http_auth(mocker):
     result = CheckSupervisord()._get_connection()
 
     assert isinstance(result, xmlrpclib.ServerProxy)  # nosec: B101
+
+
+def test__get_code(mocker):
+    """
+    Test "_get_code" method must return plugin exit code.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+
+    result = CheckSupervisord()._get_code(status="ok")
+
+    assert result == 0  # nosec: B101
+
+
+def test__get_code__warning(mocker):
+    """
+    Test "_get_code" method must return plugin exit code
+    (warning case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+
+    result = CheckSupervisord()._get_code(status="warning")
+
+    assert result == 1  # nosec: B101
+
+
+def test__get_code__critical(mocker):
+    """
+    Test "_get_code" method must return plugin exit code
+    (critical case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+
+    result = CheckSupervisord()._get_code(status="critical")
+
+    assert result == 2  # nosec: B101
+
+
+def test__get_code__unknown(mocker):
+    """
+    Test "_get_code" method must return plugin exit code
+    (unknown case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+
+    result = CheckSupervisord()._get_code(status="unknown")
+
+    assert result == 3  # nosec: B101
