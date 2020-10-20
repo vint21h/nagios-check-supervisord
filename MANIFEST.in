@@ -1,7 +1,7 @@
 # nagios-check-supervisord
 # MANIFEST.in
 
-include README.rst
-include COPYING
-include AUTHORS
-include TODO
+
+include check_supervisord.py
+recursive-include *.pyi
+recursive-exclude tests *.py

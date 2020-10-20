@@ -13,10 +13,11 @@ Source0: %{original_name}-%{version}.tar.gz
 License: GPLv3 or later
 Group: Applications/System
 BuildRequires: python-setuptools
-Requires: python >= 2.6
+Requires: python >= 2.7
 Requires: nagios-plugins
+Requires: supervisor
 Packager: Alexei Andrushievich <vint21h@vint21h.pp.ua>
-Url: https://github.com/vint21h/nagios-check-supervisord
+Url: https://github.com/vint21h/nagios-check-supervisord/
 
 %description
 Check supervisord programs status Nagios plugin.
@@ -34,6 +35,9 @@ install -p -m 755 check_supervisord.py %{buildroot}%{_libdir}/nagios/plugins/che
 %{_libdir}/nagios/plugins/check_supervisord
 
 %changelog
+* Tue Oct 20 2020 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 1.0.0-1
+- Update to new version
+
 * Wed Apr 18 2018 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.6.1-1
 - Update to new version
 

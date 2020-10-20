@@ -1,2 +1,5 @@
 # nagios-check-supervisord
 # TODO
+
+
+ - Write tests for settings stopped state status and network error exit code.
