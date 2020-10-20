@@ -64,17 +64,17 @@ class CheckSupervisord(object):
         "unknown": {"text": "'{name}' not found in server response", "priority": 3},
         "ok": {"text": "'{name}': OK", "priority": 4},
     }
-    EXIT_CODE_OK, EXIT_CODE_WARNING, EXIT_CODE_CRITICAL, EXIT_CODE_UNKNOWN = (
-        "ok",
-        "warning",
+    STATUS_CRITICAL, STATUS_WARNING, STATUS_UNKNOWN, STATUS_OK = [
         "critical",
+        "warning",
         "unknown",
-    )
+        "ok",
+    ]
     EXIT_CODES = {
-        EXIT_CODE_OK: 0,
-        EXIT_CODE_WARNING: 1,
-        EXIT_CODE_CRITICAL: 2,
-        EXIT_CODE_UNKNOWN: 3,
+        STATUS_OK: 0,
+        STATUS_WARNING: 1,
+        STATUS_CRITICAL: 2,
+        STATUS_UNKNOWN: 3,
     }
     (
         STATE_STOPPED,
@@ -96,20 +96,32 @@ class CheckSupervisord(object):
         "UNKNOWN",
     )
     STATE_TO_TEMPLATE = {
-        STATE_STOPPED: EXIT_CODE_OK,
-        STATE_RUNNING: EXIT_CODE_OK,
-        STATE_STARTING: EXIT_CODE_WARNING,
-        STATE_BACKOFF: EXIT_CODE_WARNING,
-        STATE_STOPPING: EXIT_CODE_WARNING,
-        STATE_EXITED: EXIT_CODE_WARNING,
-        STATE_FATAL: EXIT_CODE_CRITICAL,
-        STATE_UNKNOWN: EXIT_CODE_UNKNOWN,
+        STATE_STOPPED: STATUS_OK,
+        STATE_RUNNING: STATUS_OK,
+        STATE_STARTING: STATUS_WARNING,
+        STATE_BACKOFF: STATUS_WARNING,
+        STATE_STOPPING: STATUS_WARNING,
+        STATE_EXITED: STATUS_WARNING,
+        STATE_FATAL: STATUS_CRITICAL,
+        STATE_UNKNOWN: STATUS_UNKNOWN,
     }
     URI_TPL_HTTP, URI_TPL_HTTP_AUTH, URI_TPL_SOCKET = "http", "http-auth", "socket"
     URI_TEMPLATES = {
         URI_TPL_HTTP: "http://{server}:{port}",
         URI_TPL_HTTP_AUTH: "http://{username}:{password}@{server}:{port}",
         URI_TPL_SOCKET: "unix://{server}",
+    }
+    (
+        PRIORITY_CRITICAL,
+        PRIORITY_WARNING,
+        PRIORITY_UNKNOWN,
+        PRIORITY_OK,
+    ) = range(1, 5)
+    PRIORITY_TO_STATUS = {
+        PRIORITY_CRITICAL: STATUS_CRITICAL,
+        PRIORITY_WARNING: STATUS_WARNING,
+        PRIORITY_UNKNOWN: STATUS_UNKNOWN,
+        PRIORITY_OK: STATUS_OK,
     }
 
     def __init__(self):
@@ -186,7 +198,7 @@ class CheckSupervisord(object):
             dest="stopped_state",
             type=str,
             choices=self.EXIT_CODES.keys(),
-            default=self.EXIT_CODE_OK,
+            default=self.STATUS_OK,
             metavar="STOPPED_STATE",
             help="stopped state",
         )
@@ -196,7 +208,7 @@ class CheckSupervisord(object):
             dest="network_errors_exit_code",
             type=str,
             choices=self.EXIT_CODES.keys(),
-            default=self.EXIT_CODE_UNKNOWN,
+            default=self.STATUS_UNKNOWN,
             metavar="NETWORK_ERRORS_EXIT_CODE",
             help="network errors exit code",
         )
@@ -320,9 +332,32 @@ class CheckSupervisord(object):
                 )
             sys.exit(
                 self.EXIT_CODES.get(
-                    self.options.network_errors_exit_code, self.EXIT_CODE_UNKNOWN
+                    self.options.network_errors_exit_code, self.STATUS_UNKNOWN
                 )
             )
+
+    def _get_status(self, data):
+        """
+        Create main status.
+
+        :param data: devices states info
+        :type data: List[Dict[str, Union[str, int]]]
+        :return: main check status
+        :rtype: str
+        """
+
+        # for multiple check need to get main status by priority
+        priority = min(  # type: ignore
+            [
+                self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE[info["statename"]]][
+                    "priority"
+                ]
+                for info in data
+            ]
+        )
+        status = self.PRIORITY_TO_STATUS.get(priority, self.PRIORITY_CRITICAL)  # type: ignore  # noqa: E501
+
+        return status
 
     def _get_code(self, status):
         """
@@ -335,16 +370,18 @@ class CheckSupervisord(object):
         """
 
         # create exit code (unknown if something happened wrong)
-        return self.EXIT_CODES.get(status, self.EXIT_CODE_UNKNOWN)
+        return self.EXIT_CODES.get(status, self.STATUS_UNKNOWN)
 
-    def _get_output(self, data):
+    def _get_output(self, data, status):
         """
         Create Nagios and human readable supervisord statuses.
 
         :param data: supervisord XML-RPC call result
         :type data: List[Dict[str, Union[str, int]]]
-        :return: Nagios and human readable supervisord statuses and exit code
-        :rtype: Tuple[str, int]
+        :param status: main check status
+        :type status: str
+        :return: human readable supervisord statuses
+        :rtype: str
         """
 
         states = OrderedDict()
@@ -376,23 +413,6 @@ class CheckSupervisord(object):
                     {program: {"name": program, "template": "unknown", "status": ""}}
                 )
 
-        # getting main status for check
-        # (for multiple check need to get main status by priority)
-        statuses = [
-            status[0]
-            for status in sorted(
-                [
-                    (status, self.OUTPUT_TEMPLATES[status]["priority"])
-                    for status in list(
-                        set([states[program]["template"] for program in states.keys()])
-                    )
-                ],
-                key=lambda item: item[1],  # type: ignore
-            )
-        ]
-        # if no programs found or configured by supervisord
-        # set status ok and custom message
-        status = statuses[0] if statuses else self.EXIT_CODE_OK
         output = (
             ", ".join(
                 [
@@ -407,20 +427,14 @@ class CheckSupervisord(object):
                     )
                 ]
             )
-            if statuses
+            if len(states)
             else "No program configured/found"
         )
 
-        # create exit code (unknown if something happened wrong)
-        code = self.EXIT_CODES.get(status, self.EXIT_CODE_UNKNOWN)
-
         # return full status string with main status
         # for multiple programs and all programs states
-        return (
-            "{status}: {output}\n".format(
-                **{"status": status.upper(), "output": output}
-            ),
-            code,
+        return "{status}: {output}\n".format(
+            **{"status": status.upper(), "output": output}
         )
 
     def check(self):
@@ -432,8 +446,10 @@ class CheckSupervisord(object):
         """
 
         data = self._get_data()  # type: ignore
+        status = self._get_status(data=data)  # type: ignore
+        code = self._get_code(status=status)  # type: ignore
 
-        return self._get_output(data=data)  # type: ignore
+        return self._get_output(data=data, status=status), code  # type: ignore
 
 
 def main():

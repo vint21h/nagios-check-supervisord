@@ -48,6 +48,13 @@ __all__ = [
     "test__get_code__unknown",
     "test__get_data",
     "test__get_data__network_error",
+    "test__get_status",
+    "test__get_status__critical",
+    "test__get_status__warning__starting",
+    "test__get_status__warning__backoff",
+    "test__get_status__warning__stopping",
+    "test__get_status__warning__exited",
+    "test__get_status__unknown",
 ]
 
 
@@ -414,7 +421,7 @@ def test__get_data__network_error(mocker):
     mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
     mocker.patch(
         "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
-        side_effect=ConnectionRefusedError,
+        side_effect=OSError,
     )
     checker = CheckSupervisord()
 
@@ -425,3 +432,341 @@ def test__get_data__network_error(mocker):
     assert (  # nosec: B101
         "ERROR: Server communication problem" in out.getvalue().strip()
     )
+
+
+def test__get_status(mocker):
+    """
+    Test "_get_status" method must return main check status.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            }
+        ]
+    )
+
+    assert result == "ok"  # nosec: B101
+
+
+def test__get_status__critical(mocker):
+    """
+    Test "_get_status" method must return main check status  (critical case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-critical",
+                "name": "example-critical",
+                "statename": "FATAL",
+                "start": 0,
+                "state": 200,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "critical"  # nosec: B101
+
+
+def test__get_status__warning__starting(mocker):
+    """
+    Test "_get_status" method must return main check status (warning case)
+    (starting state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-warning",
+                "name": "example-warning",
+                "statename": "STARTING",
+                "start": 0,
+                "state": 10,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "warning"  # nosec: B101
+
+
+def test__get_status__warning__backoff(mocker):
+    """
+    Test "_get_status" method must return main check status (warning case)
+    (backoff state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-warning",
+                "name": "example-warning",
+                "statename": "BACKOFF",
+                "start": 0,
+                "state": 30,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "warning"  # nosec: B101
+
+
+def test__get_status__warning__stopping(mocker):
+    """
+    Test "_get_status" method must return main check status (warning case)
+    (stopping state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-warning",
+                "name": "example-warning",
+                "statename": "STOPPING",
+                "start": 0,
+                "state": 40,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "warning"  # nosec: B101
+
+
+def test__get_status__warning__exited(mocker):
+    """
+    Test "_get_status" method must return main check status (warning case)
+    (exited state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-warning",
+                "name": "example-warning",
+                "statename": "EXITED",
+                "start": 0,
+                "state": 100,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "warning"  # nosec: B101
+
+
+def test__get_status__unknown(mocker):
+    """
+    Test "_get_status" method must return main check status (unknown case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-unknown",
+                "name": "example-unknown",
+                "statename": "UNKNOWN",
+                "start": 0,
+                "state": 1000,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "unknown"  # nosec: B101

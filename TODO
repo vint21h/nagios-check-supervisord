@@ -2,8 +2,4 @@
 # TODO
 
 
- - Sort programs by status priority
- - Simplify get one program info
- - Simplify get main status code
- - Split '_get_output' method to '_get_status' and '_get_output' methods equivalently to functionality
  - Write tests!!1
