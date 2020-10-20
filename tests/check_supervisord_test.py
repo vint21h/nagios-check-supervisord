@@ -27,7 +27,7 @@ except ImportError:
         MockFixture as MockerFixture,
     )
 
-from check_supervisord import CheckSupervisord
+from check_supervisord import CheckSupervisord, main
 
 
 __all__ = [
@@ -1691,3 +1691,45 @@ def test_check__unknown__no_data(mocker):
 
     assert result.strip() == expected  # nosec: B101
     assert code == 3  # nosec: B101
+
+
+def test_main(mocker):
+    """
+    Test "check" method must print Nagios and human readable statuses.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    out = StringIO()
+    expected = "OK: 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        with contextlib2.redirect_stdout(out):
+            main()
+
+    assert out.getvalue().strip() == expected  # nosec: B101
+    assert excinfo.value.args == (0,)  # nosec: B101
