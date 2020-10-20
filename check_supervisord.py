@@ -347,13 +347,17 @@ class CheckSupervisord(object):
         """
 
         # for multiple check need to get main status by priority
-        priority = min(  # type: ignore
-            [
-                self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE[info["statename"]]][
-                    "priority"
+        priority = (
+            min(  # type: ignore
+                [
+                    self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE[info["statename"]]][
+                        "priority"
+                    ]
+                    for info in data
                 ]
-                for info in data
-            ]
+            )
+            if data
+            else self.PRIORITY_UNKNOWN
         )
         status = self.PRIORITY_TO_STATUS.get(priority, self.PRIORITY_CRITICAL)  # type: ignore  # noqa: E501
 

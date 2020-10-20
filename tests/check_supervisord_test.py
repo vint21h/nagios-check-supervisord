@@ -55,6 +55,14 @@ __all__ = [
     "test__get_status__warning__stopping",
     "test__get_status__warning__exited",
     "test__get_status__unknown",
+    "test__get_output",
+    "test__get_output__critical",
+    "test__get_output__warning__starting",
+    "test__get_output__warning__backoff",
+    "test__get_output__warning__stopping",
+    "test__get_output__warning__exited",
+    "test__get_output__unknown",
+    "test__get_output__unknown__unknown_program",
 ]
 
 
@@ -770,3 +778,449 @@ def test__get_status__unknown(mocker):
     )
 
     assert result == "unknown"  # nosec: B101
+
+
+def test__get_output(mocker):
+    """
+    Test "_get_status" method must return human readable statuses.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "OK: 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__critical(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (critical case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "CRITICAL: problem with 'example-critical': (FATAL), 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-critical",
+            "name": "example-critical",
+            "statename": "FATAL",
+            "start": 0,
+            "state": 200,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__warning__starting(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (warning case)
+    (starting state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (STARTING), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "STARTING",
+            "start": 0,
+            "state": 10,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__warning__backoff(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (warning case)
+    (backoff state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (BACKOFF), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "BACKOFF",
+            "start": 0,
+            "state": 30,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__warning__stopping(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (warning case)
+    (stopping state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (BACKOFF), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "BACKOFF",
+            "start": 0,
+            "state": 40,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__warning__exited(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (warning case)
+    (exited state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (EXITED), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "EXITED",
+            "start": 0,
+            "state": 100,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__unknown(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (unknown case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "UNKNOWN: 'example-unknown' not found in server response, 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-unknown",
+            "name": "example-unknown",
+            "statename": "UNKNOWN",
+            "start": 0,
+            "state": 1000,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__unknown__unknown_program(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (unknown case)
+    (not existed program supplied).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "OK: 'example-unknown' not found in server response"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch(
+        "sys.argv",
+        [
+            "check_supervisord.py",
+            "-s",
+            "127.0.0.1",
+            "-p",
+            "9001",
+            "-P",
+            "example-unknown",
+        ],
+    )
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
+
+
+def test__get_output__unknown__no_data(mocker):
+    """
+    Test "_get_status" method must return human readable statuses (unknown case)
+    (no data).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "UNKNOWN: No program configured/found"
+    data = []
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    status = checker._get_status(data=data)
+    result = checker._get_output(
+        data=data,
+        status=status,
+    )
+
+    assert result.strip() == expected  # nosec: B101
