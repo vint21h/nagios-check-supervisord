@@ -63,6 +63,16 @@ __all__ = [
     "test__get_output__warning__exited",
     "test__get_output__unknown",
     "test__get_output__unknown__unknown_program",
+    "test__get_output__unknown__no_data",
+    "test_check",
+    "test_check__critical",
+    "test_check__warning__starting",
+    "test_check__warning__backoff",
+    "test_check__warning__stopping",
+    "test_check__warning__exited",
+    "test_check__unknown",
+    "test_check__unknown__unknown_program",
+    "test_check__unknown__no_data",
 ]
 
 
@@ -1224,3 +1234,460 @@ def test__get_output__unknown__no_data(mocker):
     )
 
     assert result.strip() == expected  # nosec: B101
+
+
+def test_check(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "OK: 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 0  # nosec: B101
+
+
+def test_check__critical(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (critical case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "CRITICAL: problem with 'example-critical': (FATAL), 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-critical",
+            "name": "example-critical",
+            "statename": "FATAL",
+            "start": 0,
+            "state": 200,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 2  # nosec: B101
+
+
+def test_check__warning__starting(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (warning case) (starting state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (STARTING), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "STARTING",
+            "start": 0,
+            "state": 10,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 1  # nosec: B101
+
+
+def test_check__warning__backoff(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (warning case) (backoff state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (BACKOFF), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "BACKOFF",
+            "start": 0,
+            "state": 30,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 1  # nosec: B101
+
+
+def test_check__warning__stopping(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (warning case) (stopping state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (STOPPING), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "STOPPING",
+            "start": 0,
+            "state": 40,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 1  # nosec: B101
+
+
+def test_check__warning__exited(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (warning case) (exited state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = (
+        "WARNING: something curiously with 'example-warning': (EXITED), 'example': OK"
+    )
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-warning",
+            "name": "example-warning",
+            "statename": "EXITED",
+            "start": 0,
+            "state": 100,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 1  # nosec: B101
+
+
+def test_check__unknown(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code
+    (unknown case).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "UNKNOWN: 'example-unknown' not found in server response, 'example': OK"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        },
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example-unknown",
+            "name": "example-unknown",
+            "statename": "UNKNOWN",
+            "start": 0,
+            "state": 1000,
+            "stdout_logfile": "/var/log/example.log",
+        },
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 3  # nosec: B101
+
+
+def test_check__unknown__unknown_program(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code (unknown case)
+    (not existed program supplied).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "OK: 'example-unknown' not found in server response"
+    data = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch(
+        "sys.argv",
+        [
+            "check_supervisord.py",
+            "-s",
+            "127.0.0.1",
+            "-p",
+            "9001",
+            "-P",
+            "example-unknown",
+        ],
+    )
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 0  # nosec: B101
+
+
+def test_check__unknown__no_data(mocker):
+    """
+    Test "check" method must return human readable statuses and exit code (unknown case)
+    (no data).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    expected = "UNKNOWN: No program configured/found"
+    data = []
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=data,
+    )
+    checker = CheckSupervisord()
+    result, code = checker.check()
+
+    assert result.strip() == expected  # nosec: B101
+    assert code == 3  # nosec: B101
