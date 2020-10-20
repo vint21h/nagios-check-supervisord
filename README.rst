@@ -52,6 +52,7 @@ Also, ``--programs`` option can take a comma-separated list of programs to check
 ``--network-errors-exit-code`` option allows set Nagios status for checks network errors.
 
 nagios-check-supervisord support connection to supervisord XML-RPC interface through HTTP and Unix Domain Socket.
+To install nagios-check-supervisord with Unix Domain Socket: ``$ pip install nagios-check-supervisord[unix-socket-support]``
 
 Licensing
 ---------
