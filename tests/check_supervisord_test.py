@@ -46,6 +46,8 @@ __all__ = [
     "test__get_code__warning",
     "test__get_code__critical",
     "test__get_code__unknown",
+    "test__get_data",
+    "test__get_data__network_error",
 ]
 
 
@@ -361,3 +363,65 @@ def test__get_code__unknown(mocker):
     result = CheckSupervisord()._get_code(status="unknown")
 
     assert result == 3  # nosec: B101
+
+
+def test__get_data(mocker):
+    """
+    Test "_get_data" method must return data from server.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    info = [
+        {
+            "description": "pid 666, uptime 0 days, 0:00:00",
+            "pid": 666,
+            "stderr_logfile": "",
+            "stop": 0,
+            "logfile": "/var/log/example.log",
+            "exitstatus": 0,
+            "spawnerr": "",
+            "now": 0,
+            "group": "example",
+            "name": "example",
+            "statename": "RUNNING",
+            "start": 0,
+            "state": 20,
+            "stdout_logfile": "/var/log/example.log",
+        }
+    ]
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        return_value=info,
+    )
+
+    result = CheckSupervisord()._get_data()
+
+    assert result == info  # nosec: B101
+
+
+def test__get_data__network_error(mocker):
+    """
+    Test "_get_data" method must exit with server error.
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    out = StringIO()
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    mocker.patch(
+        "{name}._Method.__call__".format(**{"name": xmlrpclib.__name__}),
+        side_effect=ConnectionRefusedError,
+    )
+    checker = CheckSupervisord()
+
+    with pytest.raises(SystemExit):
+        with contextlib2.redirect_stdout(out):
+            checker._get_data()
+
+    assert (  # nosec: B101
+        "ERROR: Server communication problem" in out.getvalue().strip()
+    )
