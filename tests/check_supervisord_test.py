@@ -49,6 +49,7 @@ __all__ = [
     "test__get_data",
     "test__get_data__network_error",
     "test__get_status",
+    "test__get_status__stopped",
     "test__get_status__critical",
     "test__get_status__warning__starting",
     "test__get_status__warning__backoff",
@@ -443,13 +444,14 @@ def test__get_data__network_error(mocker):
     )
     checker = CheckSupervisord()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as excinfo:
         with contextlib2.redirect_stdout(out):
             checker._get_data()
 
     assert (  # nosec: B101
         "ERROR: Server communication problem" in out.getvalue().strip()
     )
+    assert excinfo.value.args == (3,)  # nosec: B101
 
 
 def test__get_status(mocker):
@@ -486,9 +488,59 @@ def test__get_status(mocker):
     assert result == "ok"  # nosec: B101
 
 
+def test__get_status__stopped(mocker):
+    """
+    Test "_get_status" method must return main check status (stopped state).
+
+    :param mocker: mock
+    :type mocker: MockerFixture
+    """
+
+    mocker.patch("sys.argv", ["check_supervisord.py", "-s", "127.0.0.1", "-p", "9001"])
+    checker = CheckSupervisord()
+    result = checker._get_status(
+        data=[
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example",
+                "name": "example",
+                "statename": "RUNNING",
+                "start": 0,
+                "state": 20,
+                "stdout_logfile": "/var/log/example.log",
+            },
+            {
+                "description": "pid 666, uptime 0 days, 0:00:00",
+                "pid": 666,
+                "stderr_logfile": "",
+                "stop": 0,
+                "logfile": "/var/log/example.log",
+                "exitstatus": 0,
+                "spawnerr": "",
+                "now": 0,
+                "group": "example-ok",
+                "name": "example-ok",
+                "statename": "STOPPED",
+                "start": 0,
+                "state": 200,
+                "stdout_logfile": "/var/log/example.log",
+            },
+        ]
+    )
+
+    assert result == "ok"  # nosec: B101
+
+
 def test__get_status__critical(mocker):
     """
-    Test "_get_status" method must return main check status  (critical case).
+    Test "_get_status" method must return main check status (critical case).
 
     :param mocker: mock
     :type mocker: MockerFixture
