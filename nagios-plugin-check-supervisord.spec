@@ -35,44 +35,47 @@ install -p -m 755 check_supervisord.py %{buildroot}%{_libdir}/nagios/plugins/che
 %{_libdir}/nagios/plugins/check_supervisord
 
 %changelog
+* Sat Oct 24 2020 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 1.0.1-1
+- Updated to new version
+
 * Tue Oct 20 2020 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 1.0.0-1
-- Update to new version
+- Updated to new version
 
 * Wed Apr 18 2018 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.6.1-1
-- Update to new version
+- Updated to new version
 
 * Wed Apr 18 2018 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.6.0-1
-- Update to new version
+- Updated to new version
 
 * Wed Apr 18 2018 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.5.2-1
-- Update to new version
+- Updated to new version
 
 * Mon Dec 18 2017 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.5.1-1
-- Update to new version
+- Updated to new version
 
 * Mon Dec 18 2017 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.5.0-1
-- Update to new version
+- Updated to new version
 
 * Mon Oct 10 2017 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.4.0-1
-- Update to new version
+- Updated to new version
 
 * Thu Sep 29 2016 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.3.1-1
-- Update to new version
+- Updated to new version
 
 * Fri Jul 29 2016 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.3.0-1
-- Update to new version
+- Updated to new version
 
 * Wed May 25 2016 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.2.7-1
-- Update to new version
+- Updated to new version
 
 * Wed May 25 2016 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.2.6-1
-- Update to new version
+- Updated to new version
 
 * Sat Sep 5 2015 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.2.5-1
-- Update to new version
+- Updated to new version
 
 * Mon Jun 1 2015 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.2.0-1
-- Update to new version
+- Updated to new version
 
 * Fri Feb 13 2015 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 0.1.9-1
 - Version up
