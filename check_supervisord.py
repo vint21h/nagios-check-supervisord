@@ -5,7 +5,7 @@
 # nagios-check-supervisord
 # check_supervisord.py
 
-# Copyright (c) 2015-2020 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2015-2021 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Check supervisord programs status Nagios plugin [https://github.com/vint21h/nagios-check-supervisord/]  # noqa: E501
 #
 # This file is part of nagios-check-supervisord.
