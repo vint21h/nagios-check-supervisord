@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 # metadata
-VERSION = (1, 1, 0)
+VERSION = (1, 1, 1)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = [
@@ -87,7 +87,7 @@ setup(
             "pep8-naming==0.11.1",
             "pre-commit-hooks==3.4.0",
             "pre-commit==2.10.1",
-            "pygments==2.7.4",
+            "pygments==2.8.0",
             "pylint==2.6.0",
             "pyroma==2.6",
             "pytest-cov==2.11.1",

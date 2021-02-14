@@ -68,7 +68,6 @@ Contacts
 For other authors list see AUTHORS file.
 
 
-
 .. |GitHub| image:: https://github.com/vint21h/nagios-check-supervisord/workflows/build/badge.svg
     :alt: GitHub
 .. |Coveralls| image:: https://coveralls.io/repos/github/vint21h/nagios-check-supervisord/badge.svg?branch=master
