@@ -123,6 +123,15 @@ class CheckSupervisord(object):
         PRIORITY_UNKNOWN: STATUS_UNKNOWN,
         PRIORITY_OK: STATUS_OK,
     }
+    STATUS_TO_PRIORITY = {
+        STATUS_CRITICAL: PRIORITY_CRITICAL,
+        STATUS_WARNING: PRIORITY_WARNING,
+        STATUS_UNKNOWN: PRIORITY_UNKNOWN,
+        STATUS_OK: PRIORITY_OK,
+    }
+    HELP_STATUSES = "Possible variants: {statuses}".format(
+        statuses=", ".join(EXIT_CODES.keys())
+    )
 
     def __init__(self):
         """
@@ -200,7 +209,7 @@ class CheckSupervisord(object):
             choices=self.EXIT_CODES.keys(),
             default=self.STATUS_OK,
             metavar="STOPPED_STATE",
-            help="stopped state",
+            help="stopped state. {statuses}".format(statuses=self.HELP_STATUSES),
         )
         parser.add_argument(
             "--network-errors-exit-code",
@@ -210,7 +219,21 @@ class CheckSupervisord(object):
             choices=self.EXIT_CODES.keys(),
             default=self.STATUS_UNKNOWN,
             metavar="NETWORK_ERRORS_EXIT_CODE",
-            help="network errors exit code",
+            help="network errors exit code. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
+        )
+        parser.add_argument(
+            "--no-programs-defined-status",
+            action="store",
+            dest="no_programs_defined_status",
+            type=str,
+            choices=self.EXIT_CODES.keys(),
+            default=self.STATUS_UNKNOWN,
+            metavar="NO_PROGRAMS_DEFINED_STATUS",
+            help="no programs defined status. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
         )
         parser.add_argument(
             "-q",
@@ -357,7 +380,7 @@ class CheckSupervisord(object):
                 ]
             )
             if data
-            else self.PRIORITY_UNKNOWN
+            else self.STATUS_TO_PRIORITY[self.options.no_programs_defined_status]
         )
         status = self.PRIORITY_TO_STATUS.get(priority, self.PRIORITY_CRITICAL)  # type: ignore  # noqa: E501
 
