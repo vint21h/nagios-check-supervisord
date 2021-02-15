@@ -46,7 +46,7 @@ __all__ = [
 
 
 # metadata
-VERSION = (1, 1, 1)
+VERSION = (2, 0, 0)
 __version__ = ".".join(map(str, VERSION))
 
 
@@ -123,6 +123,15 @@ class CheckSupervisord(object):
         PRIORITY_UNKNOWN: STATUS_UNKNOWN,
         PRIORITY_OK: STATUS_OK,
     }
+    STATUS_TO_PRIORITY = {
+        STATUS_CRITICAL: PRIORITY_CRITICAL,
+        STATUS_WARNING: PRIORITY_WARNING,
+        STATUS_UNKNOWN: PRIORITY_UNKNOWN,
+        STATUS_OK: PRIORITY_OK,
+    }
+    HELP_STATUSES = "Possible variants: {statuses}".format(
+        statuses=", ".join(EXIT_CODES.keys())
+    )
 
     def __init__(self):
         """
@@ -193,14 +202,16 @@ class CheckSupervisord(object):
             help="supervisord user password",
         )
         parser.add_argument(
-            "--stopped-state",
+            "--stopped-state-exit-code",
             action="store",
-            dest="stopped_state",
+            dest="stopped_state_exit_code",
             type=str,
             choices=self.EXIT_CODES.keys(),
             default=self.STATUS_OK,
-            metavar="STOPPED_STATE",
-            help="stopped state",
+            metavar="STOPPED_STATE_EXIT_CODE",
+            help="stopped state exit code. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
         )
         parser.add_argument(
             "--network-errors-exit-code",
@@ -210,7 +221,21 @@ class CheckSupervisord(object):
             choices=self.EXIT_CODES.keys(),
             default=self.STATUS_UNKNOWN,
             metavar="NETWORK_ERRORS_EXIT_CODE",
-            help="network errors exit code",
+            help="network errors exit code. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
+        )
+        parser.add_argument(
+            "--no-programs-defined-exit-code",
+            action="store",
+            dest="no_programs_defined_exit_code",
+            type=str,
+            choices=self.EXIT_CODES.keys(),
+            default=self.STATUS_UNKNOWN,
+            metavar="NO_PROGRAMS_DEFINED_EXIT_CODE",
+            help="no programs defined exit code. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
         )
         parser.add_argument(
             "-q",
@@ -229,7 +254,7 @@ class CheckSupervisord(object):
 
         options = parser.parse_args()
         # update stopped state value from command line argument
-        self.STATE_TO_TEMPLATE[self.STATE_STOPPED] = options.stopped_state
+        self.STATE_TO_TEMPLATE[self.STATE_STOPPED] = options.stopped_state_exit_code
 
         # check mandatory command line options supplied
         if not options.server:
@@ -357,7 +382,7 @@ class CheckSupervisord(object):
                 ]
             )
             if data
-            else self.PRIORITY_UNKNOWN
+            else self.STATUS_TO_PRIORITY[self.options.no_programs_defined_exit_code]
         )
         status = self.PRIORITY_TO_STATUS.get(priority, self.PRIORITY_CRITICAL)  # type: ignore  # noqa: E501
 
