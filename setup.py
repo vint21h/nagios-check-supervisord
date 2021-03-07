@@ -101,6 +101,7 @@ setup(
             "tox-pyenv==1.1.0",
             "tox==3.23.0",
             "twine==3.3.0",
+            "yesqa==1.2.2",
         ],
         "test-old-python": [
             "check-manifest==0.41",
