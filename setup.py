@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 # metadata
-VERSION = (2, 0, 1)
+VERSION = (2, 0, 2)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = [
@@ -78,7 +78,7 @@ setup(
             "dotenv-linter==0.2.0",
             "flake8-annotations-complexity==0.0.6",
             "flake8-annotations-coverage==0.0.5",
-            "flake8-bugbear==21.3.1",
+            "flake8-bugbear==21.3.2",
             "flake8-docstrings==1.5.0",
             "flake8-fixme==1.1.1",
             "flake8==3.8.4",
@@ -87,12 +87,13 @@ setup(
             "mypy==0.812",
             "pep8-naming==0.11.1",
             "pre-commit-hooks==3.4.0",
-            "pre-commit==2.10.1",
+            "pre-commit==2.11.1",
             "pygments==2.8.1",
             "pylint==2.7.2",
             "pyroma==3.1",
             "pytest-cov==2.11.1",
             "pytest-mock==3.5.1",
+            "pytest-tldr==0.2.3",
             "pytest==6.2.2",
             "readme_renderer==29.0",
             "removestar==1.2.2",
