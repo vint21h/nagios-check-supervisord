@@ -7,7 +7,7 @@
 
 Summary: Check supervisord programs status Nagios plugin
 Name: nagios-plugins-check-supervisord
-Version: 2.0.2
+Version: 2.0.3
 Release: 1%{?dist}
 Source0: %{original_name}-%{version}.tar.gz
 License: GPLv3 or later
@@ -35,6 +35,9 @@ install -p -m 755 check_supervisord.py %{buildroot}%{_libdir}/nagios/plugins/che
 %{_libdir}/nagios/plugins/check_supervisord
 
 %changelog
+* Sun Mar 14 2021 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 2.0.3-1
+- Updated to new version
+
 * Wed Mar 10 2021 Alexei Andrushievich <vint21h@vint21h.pp.ua> - 2.0.2-1
 - Updated to new version
 
