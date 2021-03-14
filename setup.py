@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 # metadata
-VERSION = (2, 0, 2)
+VERSION = (2, 0, 3)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = [
@@ -93,7 +93,7 @@ setup(
             "pyroma==3.1",
             "pytest-cov==2.11.1",
             "pytest-mock==3.5.1",
-            "pytest-tldr==0.2.3",
+            "pytest-tldr==0.2.4",
             "pytest==6.2.2",
             "readme_renderer==29.0",
             "removestar==1.2.2",
