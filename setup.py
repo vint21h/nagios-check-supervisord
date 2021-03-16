@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 # metadata
-VERSION = (2, 0, 3)
+VERSION = (2, 0, 4)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = [
@@ -79,9 +79,10 @@ setup(
             "flake8-annotations-complexity==0.0.6",
             "flake8-annotations-coverage==0.0.5",
             "flake8-bugbear==21.3.2",
+            "flake8-comprehensions==3.3.1",
             "flake8-docstrings==1.5.0",
             "flake8-fixme==1.1.1",
-            "flake8==3.8.4",
+            "flake8==3.9.0",
             "interrogate==1.3.2",
             "isort==5.7.0",
             "mypy==0.812",
@@ -102,7 +103,7 @@ setup(
             "tox-gh-actions==2.4.0",
             "tox-pyenv==1.1.0",
             "tox==3.23.0",
-            "twine==3.3.0",
+            "twine==3.4.0",
             "yesqa==1.2.2",
         ],
         "test-old-python": [

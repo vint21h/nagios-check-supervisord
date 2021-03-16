@@ -46,7 +46,7 @@ __all__ = [
 
 
 # metadata
-VERSION = (2, 0, 3)
+VERSION = (2, 0, 4)
 __version__ = ".".join(map(str, VERSION))
 
 
@@ -373,7 +373,7 @@ class CheckSupervisord(object):
 
         # for multiple check need to get main status by priority
         priority = (
-            min(  # type: ignore
+            min(  # type: ignore  # noqa: C407
                 [
                     self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE[info["statename"]]][
                         "priority"
