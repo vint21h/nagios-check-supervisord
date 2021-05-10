@@ -46,7 +46,7 @@ __all__ = [
 
 
 # metadata
-VERSION = (2, 0, 4)
+VERSION = (2, 1, 0)
 __version__ = ".".join(map(str, VERSION))
 
 
@@ -214,6 +214,18 @@ class CheckSupervisord(object):
             ),
         )
         parser.add_argument(
+            "--starting-state-exit-code",
+            action="store",
+            dest="starting_state_exit_code",
+            type=str,
+            choices=self.EXIT_CODES.keys(),
+            default=self.STATUS_WARNING,
+            metavar="STARTING_STATE_EXIT_CODE",
+            help="starting state exit code. {statuses}".format(
+                statuses=self.HELP_STATUSES
+            ),
+        )
+        parser.add_argument(
             "--network-errors-exit-code",
             action="store",
             dest="network_errors_exit_code",
@@ -255,6 +267,8 @@ class CheckSupervisord(object):
         options = parser.parse_args()
         # update stopped state value from command line argument
         self.STATE_TO_TEMPLATE[self.STATE_STOPPED] = options.stopped_state_exit_code
+        # update starting state value from command line argument
+        self.STATE_TO_TEMPLATE[self.STATE_STARTING] = options.starting_state_exit_code
 
         # check mandatory command line options supplied
         if not options.server:
