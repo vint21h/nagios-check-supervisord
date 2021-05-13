@@ -49,6 +49,8 @@ Also, ``--programs`` option can take a comma-separated list of programs to check
 
 ``--stopped-state-exit-code`` option allows set Nagios status for stopped programs.
 
+``--starting-state-exit-code`` option allows set Nagios status for starting programs.
+
 ``--network-errors-exit-code`` option allows set Nagios status for checks network errors.
 
 ``--no-programs-defined-exit-code`` option allows set Nagios status for not configured/found programs in supervisord response.
