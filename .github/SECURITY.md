@@ -11,7 +11,7 @@ security policy is very simple: supported only the last major or minor branch.
 
 | Version  | Supported          |
 | -------- | ------------------ |
-| 1.1.x    | :white_check_mark: |
+| 2.1.x    | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
