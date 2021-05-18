@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 # metadata
-VERSION = (2, 1, 1)
+VERSION = (2, 2, 0)
 __version__ = ".".join(map(str, VERSION))
 
 DATA = [
