@@ -151,7 +151,7 @@ def test__get_connection_uri__socket(mocker):
 
     assert (  # nosec: B101
         checker._get_connection_uri(tpl=checker.URI_TPL_SOCKET)
-        == "unix:///tmp/supervisord.sock"
+        == "unix:///tmp/supervisord.sock"  # noqa: W503
     )
 
 
@@ -203,7 +203,7 @@ def test__get_connection_uri__http_auth(mocker):
 
     assert (  # nosec: B101
         checker._get_connection_uri(tpl=checker.URI_TPL_HTTP_AUTH)
-        == "http://supervisord:password@127.0.0.1:9001"
+        == "http://supervisord:password@127.0.0.1:9001"  # noqa: W503
     )
 
 
