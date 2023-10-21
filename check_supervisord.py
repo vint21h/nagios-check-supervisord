@@ -58,7 +58,7 @@ class CheckSupervisord(object):
     OUTPUT_TEMPLATES = {
         "critical": {"text": "problem with '{name}': ({status})", "priority": 1},
         "warning": {
-            "text": "something curiously with '{name}': ({status})",
+            "text": "something curious with '{name}': ({status})",
             "priority": 2,
         },
         "unknown": {"text": "'{name}' not found in server response", "priority": 3},
