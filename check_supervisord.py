@@ -27,6 +27,7 @@
 from __future__ import unicode_literals
 
 import os
+import socket
 import sys
 import stat
 from collections import OrderedDict
@@ -348,6 +349,9 @@ class CheckSupervisord(object):
                 connection = xmlrpclib.Server(
                     uri=self._get_connection_uri(tpl=self.URI_TPL_HTTP)  # type: ignore  # noqa: E501
                 )
+
+        # set the global timeout to 20 seconds
+        socket.setdefaulttimeout(20)
 
         return connection
 
