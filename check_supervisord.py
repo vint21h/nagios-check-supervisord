@@ -375,25 +375,58 @@ class CheckSupervisord(object):
                 )
             )
 
-    def _get_status(self, data):
+    def _get_programs(self, data):
         """
         Create main status.
 
         :param data: devices states info
         :type data: List[Dict[str, Union[str, int]]]
+        :return: programs we're interested in
+        :rtype: List[str]
+        """
+
+        return (
+            map(
+                lambda program: program.strip(),
+                self.options.programs.strip().split(","),
+            )
+            if self.options.programs
+            else map(lambda x: x["name"], data)
+        )
+
+    def _get_status(self, data, programs):
+        """
+        Create main status.
+
+        :param data: devices states info
+        :type data: List[Dict[str, Union[str, int]]]
+        :param programs: programs we're interested in
+        :type programs: List[str]
         :return: main check status
         :rtype: str
         """
 
         # for multiple check need to get main status by priority
-        priority = (
-            min(  # type: ignore  # noqa: C407
-                [
+        # if programs were specified, only care about the state of the given ones
+        statuses = []
+        for program in programs:
+            try:
+                info = min(filter(lambda x: x["name"] == program, data))
+                statuses.append(
                     self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE[info["statename"]]][
                         "priority"
                     ]
-                    for info in data
-                ]
+                )
+            except ValueError:
+                statuses.append(
+                    self.OUTPUT_TEMPLATES[self.STATE_TO_TEMPLATE["UNKNOWN"]][
+                        "priority"
+                    ]
+                )
+
+        priority = (
+            min(  # type: ignore  # noqa: C407
+                statuses
             )
             if data
             else self.STATUS_TO_PRIORITY[self.options.no_programs_defined_exit_code]
@@ -415,7 +448,7 @@ class CheckSupervisord(object):
         # create exit code (unknown if something happened wrong)
         return self.EXIT_CODES.get(status, self.STATUS_UNKNOWN)
 
-    def _get_output(self, data, status):
+    def _get_output(self, data, status, programs):
         """
         Create Nagios and human readable supervisord statuses.
 
@@ -423,19 +456,13 @@ class CheckSupervisord(object):
         :type data: List[Dict[str, Union[str, int]]]
         :param status: main check status
         :type status: str
+        :param programs: programs we're interested in
+        :type programs: List[str]
         :return: human readable supervisord statuses
         :rtype: str
         """
 
         states = OrderedDict()
-        programs = (
-            map(
-                lambda program: program.strip(),
-                self.options.programs.strip().split(","),
-            )
-            if self.options.programs
-            else map(lambda x: x["name"], data)
-        )
 
         for program in programs:
             try:
@@ -489,10 +516,11 @@ class CheckSupervisord(object):
         """
 
         data = self._get_data()  # type: ignore
-        status = self._get_status(data=data)  # type: ignore
+        programs = self._get_programs(data)  # type: ignore
+        status = self._get_status(data=data, programs=programs)  # type: ignore
         code = self._get_code(status=status)  # type: ignore
 
-        return self._get_output(data=data, status=status), code  # type: ignore
+        return self._get_output(data=data, status=status, programs=programs), code  # type: ignore
 
 
 def main():
